@@ -1,4 +1,4 @@
-package bitpay
+package key_utils
 
 import (
 	"crypto/elliptic"
