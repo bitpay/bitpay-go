@@ -6,7 +6,6 @@ import (
 	"encoding/asn1"
 	"encoding/hex"
 	"encoding/pem"
-	"fmt"
 	"github.com/btcsuite/btcd/btcec"
 	"github.com/btcsuite/btcutil/base58"
 	"golang.org/x/crypto/ripemd160"
@@ -36,6 +35,12 @@ func GeneratePem() string {
 	return string(pm)
 }
 
+func GenerateSinFromPem(pm string) string {
+	key := ExtractKeyFromPem(pm)
+	sin := generateSinFromKey(key)
+	return sin
+}
+
 func ExtractKeyFromPem(pm string) *btcec.PrivateKey {
 	byta := []byte(pm)
 	blck, _ := pem.Decode(byta)
@@ -50,14 +55,15 @@ func GeneratePrivateKey() *btcec.PrivateKey {
 	return priv
 }
 
-func GenerateSinFromKey(key *btcec.PrivateKey) string {
+func generateSinFromKey(key *btcec.PrivateKey) string {
 	pub := key.PubKey()
 	comp := pub.SerializeCompressed()
-	stx := fmt.Sprintf("%X", comp)
+	hexb := hex.EncodeToString(comp)
+	stx := generateSinFromPublicKey(hexb)
 	return stx
 }
 
-func GenerateSinFromPublicKey(key string) string {
+func generateSinFromPublicKey(key string) string {
 	hexa := sha256ofHexString(key)
 	hexa = ripemd160ofHexString(hexa)
 	versionSinTypeEtc := "0F02" + hexa
