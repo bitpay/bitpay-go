@@ -3,6 +3,7 @@ package key_utils_test
 import (
 	. "bitpay/key_utils"
 	"crypto/elliptic"
+	"crypto/sha256"
 	"encoding/asn1"
 	"encoding/hex"
 	"encoding/pem"
@@ -38,6 +39,26 @@ var _ = Describe("Testing with Ginkgo", func() {
 		if hexa != hexb {
 			GinkgoT().Errorf("expected: %s\nreceived: %s", hexa, hexb)
 		}
+	})
+
+	It("signs the sha256 with a pem", func() {
+		// sign the message, then extract the signature from result
+		pm := GeneratePem()
+		message := "Hi Everybody!"
+		signed := Sign(message, pm)
+		byt, _ := hex.DecodeString(signed)
+		signature, _ := btcec.ParseSignature(byt, btcec.S256())
+
+		// create the expected message
+		hash := sha256.New()
+		hash.Write([]byte(message))
+		expectedMessage := hash.Sum(nil)
+
+		// get the public key from the PEM
+		priv := ExtractKeyFromPem(pm)
+		pub := priv.PubKey()
+
+		Expect(signature.Verify(expectedMessage, pub)).To(Equal(true))
 	})
 })
 

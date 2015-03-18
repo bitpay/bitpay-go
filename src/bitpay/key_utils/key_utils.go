@@ -41,6 +41,14 @@ func GenerateSinFromPem(pm string) string {
 	return sin
 }
 
+func ExtractCompressedPublicKey(pm string) string {
+	key := ExtractKeyFromPem(pm)
+	pub := key.PubKey()
+	comp := pub.SerializeCompressed()
+	hexb := hex.EncodeToString(comp)
+	return hexb
+}
+
 func ExtractKeyFromPem(pm string) *btcec.PrivateKey {
 	byta := []byte(pm)
 	blck, _ := pem.Decode(byta)
@@ -50,9 +58,28 @@ func ExtractKeyFromPem(pm string) *btcec.PrivateKey {
 	return priv
 }
 
+func ExtractSerializedKeyFromPem(pm string) string {
+	priv := ExtractKeyFromPem(pm)
+	ser := priv.Serialize()
+	hexa := hex.EncodeToString(ser)
+	return hexa
+}
+
 func GeneratePrivateKey() *btcec.PrivateKey {
 	priv, _ := btcec.NewPrivateKey(btcec.S256())
 	return priv
+}
+
+func Sign(message string, pm string) string {
+	key := ExtractKeyFromPem(pm)
+	byta := []byte(message)
+	hash := sha256.New()
+	hash.Write(byta)
+	bytb := hash.Sum(nil)
+	sig, _ := key.Sign(bytb)
+	ser := sig.Serialize()
+	hexa := hex.EncodeToString(ser)
+	return hexa
 }
 
 func generateSinFromKey(key *btcec.PrivateKey) string {
