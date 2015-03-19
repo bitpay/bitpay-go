@@ -73,17 +73,7 @@ func (client *Client) CreateInvoice(price float64, currency string) (inv invoice
 	sig := ku.Sign(url+string(payload), client.Pem)
 	req.Header.Add("X-Signature", sig)
 	response, _ := htclient.Do(req)
-	defer response.Body.Close()
-	contents, _ := ioutil.ReadAll(response.Body)
-	var jsonContents map[string]interface{}
-	if response.StatusCode/100 != 2 {
-		err = processErrorMessage(response, jsonContents)
-	} else {
-		json.Unmarshal(contents, &jsonContents)
-		this, _ := json.Marshal(jsonContents["data"])
-		json.Unmarshal(this, &inv)
-		err = nil
-	}
+	inv, err = processInvoice(response)
 	return inv, err
 }
 
@@ -123,17 +113,7 @@ func (client *Client) GetInvoice(invId string) (inv invoice, err error) {
 	url := client.ApiUri + "/invoices/" + invId
 	htclient := setHttpClient(client)
 	response, _ := htclient.Get(url)
-	defer response.Body.Close()
-	contents, _ := ioutil.ReadAll(response.Body)
-	var jsonContents map[string]interface{}
-	if response.StatusCode/100 != 2 {
-		err = processErrorMessage(response, jsonContents)
-	} else {
-		json.Unmarshal(contents, &jsonContents)
-		this, _ := json.Marshal(jsonContents["data"])
-		json.Unmarshal(this, &inv)
-		err = nil
-	}
+	inv, err = processInvoice(response)
 	return inv, err
 }
 
@@ -164,6 +144,17 @@ func processToken(response *http.Response, jsonContents map[string]interface{}) 
 	return tok, nil
 }
 
-func processSuccess(data map[string]interface{}) (tok Token, err error) {
-	return tok, nil
+func processInvoice(response *http.Response) (inv invoice, err error) {
+	defer response.Body.Close()
+	contents, _ := ioutil.ReadAll(response.Body)
+	var jsonContents map[string]interface{}
+	if response.StatusCode/100 != 2 {
+		err = processErrorMessage(response, jsonContents)
+	} else {
+		json.Unmarshal(contents, &jsonContents)
+		this, _ := json.Marshal(jsonContents["data"])
+		json.Unmarshal(this, &inv)
+		err = nil
+	}
+	return inv, err
 }
