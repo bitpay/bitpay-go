@@ -5,7 +5,6 @@ import (
 	ku "bitpay/key_utils"
 	"os"
 
-	"fmt"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"io/ioutil"
@@ -24,9 +23,7 @@ var _ = Describe("ClientPair", func() {
 		code := string(byt)
 		apiuri := os.ExpandEnv("$RCROOTADDRESS")
 		webClient := Client{ApiUri: apiuri, Insecure: true, Pem: pm}
-		token, err := webClient.PairWithCode(code)
-		fmt.Println(token)
-		fmt.Println(err)
+		token, _ := webClient.PairWithCode(code)
 		webClient.Token = token
 		Expect(webClient.Token.Facade).To(Equal("pos"))
 	})

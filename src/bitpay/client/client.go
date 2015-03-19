@@ -6,7 +6,6 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"regexp"
@@ -120,6 +119,24 @@ func (client *Client) PairWithCode(str string) (tok Token, err error) {
 	return tok, err
 }
 
+func (client *Client) GetInvoice(invId string) (inv invoice, err error) {
+	url := client.ApiUri + "/invoices/" + invId
+	htclient := setHttpClient(client)
+	response, _ := htclient.Get(url)
+	defer response.Body.Close()
+	contents, _ := ioutil.ReadAll(response.Body)
+	var jsonContents map[string]interface{}
+	if response.StatusCode/100 != 2 {
+		err = processErrorMessage(response, jsonContents)
+	} else {
+		json.Unmarshal(contents, &jsonContents)
+		this, _ := json.Marshal(jsonContents["data"])
+		json.Unmarshal(this, &inv)
+		err = nil
+	}
+	return inv, err
+}
+
 func setHttpClient(client *Client) *http.Client {
 	if client.Insecure {
 		trans := &http.Transport{
@@ -148,6 +165,5 @@ func processToken(response *http.Response, jsonContents map[string]interface{}) 
 }
 
 func processSuccess(data map[string]interface{}) (tok Token, err error) {
-	fmt.Println(tok)
 	return tok, nil
 }
