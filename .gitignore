@@ -23,3 +23,7 @@ _testmain.go
 *.test
 *.prof
 *.log
+btcsuite/*
+gorilla/*
+onsi/*
+golang.org/
