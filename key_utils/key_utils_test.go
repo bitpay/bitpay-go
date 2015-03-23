@@ -1,7 +1,8 @@
 package key_utils_test
 
 import (
-	. "bitpay/key_utils"
+	. "github.com/philosodad/bitpay-go/key_utils"
+
 	"crypto/elliptic"
 	"crypto/sha256"
 	"encoding/asn1"

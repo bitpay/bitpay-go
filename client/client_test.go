@@ -1,12 +1,13 @@
 package client_test
 
 import (
-	ku "bitpay/key_utils"
+	. "github.com/philosodad/bitpay-go/client"
+	ku "github.com/philosodad/bitpay-go/key_utils"
+
 	"github.com/gorilla/mux"
 	"net/http"
 	"net/http/httptest"
 
-	. "bitpay/client"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

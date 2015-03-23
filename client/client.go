@@ -1,11 +1,11 @@
 package client
 
 import (
-	ku "bitpay/key_utils"
 	"bytes"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
+	ku "github.com/philosodad/bitpay-go/key_utils"
 	"io/ioutil"
 	"net/http"
 	"regexp"
