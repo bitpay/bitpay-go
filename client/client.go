@@ -58,7 +58,13 @@ func (client *Client) CreateInvoice(price float64, currency string) (inv invoice
 	url := client.ApiUri + "/invoices"
 	htclient := setHttpClient(client)
 	paylo := make(map[string]string)
-	priceString := strconv.FormatFloat(price, 'f', 2, 64)
+	var floatPrec int
+	if currency == "BTC" {
+		floatPrec = 8
+	} else {
+		floatPrec = 2
+	}
+	priceString := strconv.FormatFloat(price, 'f', floatPrec, 64)
 	paylo["price"] = priceString
 	paylo["currency"] = currency
 	paylo["token"] = client.Token.Token
@@ -148,10 +154,10 @@ func processInvoice(response *http.Response) (inv invoice, err error) {
 	defer response.Body.Close()
 	contents, _ := ioutil.ReadAll(response.Body)
 	var jsonContents map[string]interface{}
+	json.Unmarshal(contents, &jsonContents)
 	if response.StatusCode/100 != 2 {
 		err = processErrorMessage(response, jsonContents)
 	} else {
-		json.Unmarshal(contents, &jsonContents)
 		this, _ := json.Marshal(jsonContents["data"])
 		json.Unmarshal(this, &inv)
 		err = nil

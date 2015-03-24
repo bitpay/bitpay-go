@@ -29,5 +29,7 @@ var _ = Describe("CreateInvoice", func() {
 		webClient.Token = token
 		response, _ := webClient.CreateInvoice(10, "USD")
 		Expect(response.Price).To(Equal(10.00))
+		response, _ = webClient.CreateInvoice(0.00023, "BTC")
+		Expect(response.Price).To(Equal(0.00023))
 	})
 })
