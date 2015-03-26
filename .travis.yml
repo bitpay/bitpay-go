@@ -1,0 +1,10 @@
+language: go
+# command to install dependencies
+install:
+  - sudo pip install -r helpers/requirements.txt
+  - rm -rf src/github.com src/golang.org
+  - go get -t -u github.com/bitpay/bitpay-go/client
+  - go install github.com/onsi/ginkgo/ginkgo
+# command to run tests
+script: 
+  - ginkgo -r --keepGoing src/github.com/bitpay/ 
