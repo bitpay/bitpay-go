@@ -4,6 +4,9 @@ install:
   - sudo pip install -r requirements.txt
   - go get github.com/onsi/ginkgo/ginkgo
   - go get github.com/onsi/gomega
+  - go get github.com/btcsuite/btcd/btcec
+  - go get github.com/btcsuite/btcutil/base58
+  - go get github.com/gorilla/mux
   - go get golang.org/x/crypto/ripemd160
 # command to run tests
 script: 
