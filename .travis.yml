@@ -3,7 +3,7 @@ language: go
 install:
   - sudo pip install -r requirements.txt
   - go get github.com/onsi/ginkgo/ginkgo
-  - go get github.com/onsi/omega
+  - go get github.com/onsi/gomega
   - go get golang.org/x/ripemd160
 # command to run tests
 script: 
