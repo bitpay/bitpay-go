@@ -10,4 +10,4 @@ install:
   - go get golang.org/x/crypto/ripemd160
 # command to run tests
 script: 
-  - ginkgo -r --keepGoing -skip="pairs|currency"
+  - ginkgo -r --keepGoing 
