@@ -1,14 +1,9 @@
 # BitPay Library for Go 
 Powerful, flexible, lightweight interface to the BitPay Bitcoin Payment Gateway API.
 
-[![Supported Python versions](https://pypip.in/py_versions/bitpay/badge.svg)](https://pypi.python.org/pypi/bitpay/)
-[![PyPi Package](https://pypip.in/version/bitpay/badge.svg)](https://pypi.python.org/pypi/bitpay/2.2.0)
-[![](https://travis-ci.org/philosodad/bitpay-python.svg?branch=master)](https://travis-ci.org/philosodad/bitpay-python)
-
-This library is only compatible with Python 3. Please use the bitpay-python-py2 library for Python 2 installations.
-
 ## [Getting Started &raquo;](http://dev.bitpay.com/guides/go.html)
 
+Code documentation is available on [godoc](http://godoc.org/github.com/bitpay/bitpay-go)
 ## API Documentation
 
 API Documentation is available on the [BitPay site](https://bitpay.com/api).
