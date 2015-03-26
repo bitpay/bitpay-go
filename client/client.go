@@ -6,7 +6,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"errors"
-	ku "github.com/philosodad/bitpay-go/key_utils"
+	ku "github.com/bitpay/bitpay-go/key_utils"
 	"io/ioutil"
 	"net/http"
 	"regexp"
