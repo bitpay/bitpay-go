@@ -2,7 +2,9 @@ language: go
 # command to install dependencies
 install:
   - sudo pip install -r requirements.txt
-  - go install github.com/onsi/ginkgo/ginkgo
+  - go get github.com/onsi/ginkgo/ginkgo
+  - go get github.com/onsi/omega
+  - go get golang.org/x/ripemd160
 # command to run tests
 script: 
   - ginkgo -r --keepGoing src/github.com/bitpay/ 
