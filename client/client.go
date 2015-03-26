@@ -1,3 +1,4 @@
+//The client package provides convenience methods for authenticating with Bitpay and creating basic invoices.
 package client
 
 import (
@@ -12,6 +13,7 @@ import (
 	"strconv"
 )
 
+// The Client struct maintains the state of the current client. To use a client from session to session, the Pem and Token will need to be saved and used in the next client. The ClientId can be recreated by using the key_util.GenerateSinFromPem func, and the ApiUri will generally be https://bitpay.com. Insecure should generally be set to false or not set at all, there are a limited number of test scenarios in which it must be set to true.
 type Client struct {
 	Pem      string
 	ApiUri   string
@@ -20,6 +22,7 @@ type Client struct {
 	Token    Token
 }
 
+// The Token struct is a go mapping of a subset of the JSON returned from the server with a request to authenticate (pair).
 type Token struct {
 	Token             string
 	Facade            string
@@ -28,6 +31,8 @@ type Token struct {
 	Resource          string
 	PairingCode       string
 }
+
+// Go struct mapping the JSON returned from the BitPay server when sending a POST or GET request to /invoices.
 
 type invoice struct {
 	Url             string
@@ -49,6 +54,7 @@ type invoice struct {
 	Token           string
 }
 
+// CreateInvoice returns an invoice type or pass the error from the server. The method will create an invoice on the BitPay server.
 func (client *Client) CreateInvoice(price float64, currency string) (inv invoice, err error) {
 	match, _ := regexp.MatchString("^[[:upper:]]{3}$", currency)
 	if !match {
@@ -83,6 +89,7 @@ func (client *Client) CreateInvoice(price float64, currency string) (inv invoice
 	return inv, err
 }
 
+// PairWithCode retrieves a token from the server and authenticates the keys of the calling client. The string passed to the client is a "pairing code" that must be retrieved from https://bitpay.com/dashboard/merchant/api-tokens. PairWithCode returns a Token type that must be assigned to the Token field of a client in order for that client to create invoices. For example `client.Token = client.PairWithCode("abcdefg")`.
 func (client *Client) PairWithCode(str string) (tok Token, err error) {
 	match, _ := regexp.MatchString("^[[:alnum:]]{7}$", str)
 	if !match {
@@ -115,6 +122,7 @@ func (client *Client) PairWithCode(str string) (tok Token, err error) {
 	return tok, err
 }
 
+// GetInvoice is a public facade method, any client which has the ApiUri field set can retrieve an invoice from that endpoint, provided they have the invoice id.
 func (client *Client) GetInvoice(invId string) (inv invoice, err error) {
 	url := client.ApiUri + "/invoices/" + invId
 	htclient := setHttpClient(client)

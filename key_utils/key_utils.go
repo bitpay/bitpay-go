@@ -1,3 +1,4 @@
+//Package key_utils provides methods to generate keys and retrieve bitpay specific ids (the SIN) and correctly formatted signatures.
 package key_utils
 
 import (
@@ -13,6 +14,7 @@ import (
 	"golang.org/x/crypto/ripemd160"
 )
 
+//This type provides compatibility with the btcec package
 type ecPrivateKey struct {
 	Version       int
 	PrivateKey    []byte
@@ -20,6 +22,7 @@ type ecPrivateKey struct {
 	PublicKey     asn1.BitString        `asn1:"optional,explicit,tag:1"`
 }
 
+//All BitPay clients use a PEM file to store the private and public keys.
 func GeneratePem() string {
 	priv, _ := btcec.NewPrivateKey(btcec.S256())
 	pub := priv.PubKey()
@@ -37,12 +40,14 @@ func GeneratePem() string {
 	return string(pm)
 }
 
+//GenerateSinFromPem returns a base58 encoding of a public key. It expects a pem string as the argument.
 func GenerateSinFromPem(pm string) string {
 	key := ExtractKeyFromPem(pm)
 	sin := generateSinFromKey(key)
 	return sin
 }
 
+//ExtractCompressedPublicKey returns a hexadecimal encoding of the compressed public key. It expects a pem string as the argument.
 func ExtractCompressedPublicKey(pm string) string {
 	key := ExtractKeyFromPem(pm)
 	pub := key.PubKey()
@@ -51,27 +56,7 @@ func ExtractCompressedPublicKey(pm string) string {
 	return hexb
 }
 
-func ExtractKeyFromPem(pm string) *btcec.PrivateKey {
-	byta := []byte(pm)
-	blck, _ := pem.Decode(byta)
-	var ecp ecPrivateKey
-	asn1.Unmarshal(blck.Bytes, &ecp)
-	priv, _ := btcec.PrivKeyFromBytes(btcec.S256(), ecp.PrivateKey)
-	return priv
-}
-
-func ExtractSerializedKeyFromPem(pm string) string {
-	priv := ExtractKeyFromPem(pm)
-	ser := priv.Serialize()
-	hexa := hex.EncodeToString(ser)
-	return hexa
-}
-
-func GeneratePrivateKey() *btcec.PrivateKey {
-	priv, _ := btcec.NewPrivateKey(btcec.S256())
-	return priv
-}
-
+//Returns a hexadecimal encoding of the signed sha256 hash of message, using the key provide in the pem string pm.
 func Sign(message string, pm string) string {
 	key := ExtractKeyFromPem(pm)
 	byta := []byte(message)
@@ -82,6 +67,16 @@ func Sign(message string, pm string) string {
 	ser := sig.Serialize()
 	hexa := hex.EncodeToString(ser)
 	return hexa
+}
+
+//Returns a btec.Private key object if provided a correct secp256k1 encoded pem.
+func ExtractKeyFromPem(pm string) *btcec.PrivateKey {
+	byta := []byte(pm)
+	blck, _ := pem.Decode(byta)
+	var ecp ecPrivateKey
+	asn1.Unmarshal(blck.Bytes, &ecp)
+	priv, _ := btcec.PrivKeyFromBytes(btcec.S256(), ecp.PrivateKey)
+	return priv
 }
 
 func generateSinFromKey(key *btcec.PrivateKey) string {

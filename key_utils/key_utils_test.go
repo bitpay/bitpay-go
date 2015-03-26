@@ -79,6 +79,11 @@ func GeneratePemFromKey(priv *btcec.PrivateKey) string {
 	return string(pm)
 }
 
+func GeneratePrivateKey() *btcec.PrivateKey {
+	priv, _ := btcec.NewPrivateKey(btcec.S256())
+	return priv
+}
+
 type ecPrivateKey struct {
 	Version       int
 	PrivateKey    []byte
