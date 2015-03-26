@@ -22,6 +22,7 @@ var _ = Describe("ClientPair", func() {
 		cmd.Start()
 		byt, _ := ioutil.ReadAll(stdout)
 		code := string(byt)
+		println("Code: " + code)
 		apiuri := os.ExpandEnv("$RCROOTADDRESS")
 		webClient := Client{ApiUri: apiuri, Insecure: true, Pem: pm}
 		token, _ := webClient.PairWithCode(code)
