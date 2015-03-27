@@ -20,12 +20,12 @@ var _ = Describe("RetrieveInvoice", func() {
 		webClient.Token = token
 		response, err := webClient.CreateInvoice(10, "USD")
 		if err != nil {
-			println("the retrieve test errored while creating an invoice")
+			println("the retrieve test errored while creating an invoice: Error - " + err.Error())
 		}
 		invoiceId := response.Id
 		retrievedInvoice, err := webClient.GetInvoice(invoiceId)
 		if err != nil {
-			println("The retrieve test errored while retrieving an invoice")
+			println(webClient.ApiUri + ", " + webClient.Token.token + " errored retrieving an invoice: Error - " + err.Error())
 		}
 		Expect(retrievedInvoice.Id).To(Equal(invoiceId))
 		Expect(retrievedInvoice.Price).To(Equal(response.Price))
