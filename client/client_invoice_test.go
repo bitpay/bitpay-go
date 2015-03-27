@@ -7,6 +7,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
+	"io/ioutil"
 	"os"
 	"time"
 )
@@ -17,8 +18,20 @@ var _ = Describe("CreateInvoice", func() {
 		pm := ku.GeneratePem()
 		apiuri := os.ExpandEnv("$RCROOTADDRESS")
 		webClient := Client{ApiUri: apiuri, Insecure: true, Pem: pm}
-		code := os.ExpandEnv("$INVOICEPAIR")
-		token, _ := webClient.PairWithCode(code)
+		gopath := os.ExpandEnv("$GOPATH")
+		tempFolder := gopath + "/temp/"
+		code, err := ioutil.ReadFile(tempFolder + "invoicecode.txt")
+		if err != nil {
+			println(err.Error())
+		} else {
+			println(code)
+		}
+		token, err := webClient.PairWithCode(string(code))
+		if err != nil {
+			println(err.Error())
+		} else {
+			println(token.Token)
+		}
 		webClient.Token = token
 		response, err := webClient.CreateInvoice(10, "USD")
 		if err != nil {

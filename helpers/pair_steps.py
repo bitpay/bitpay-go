@@ -38,6 +38,17 @@ def get_claim_code_from_server():
     f = open(tempath + "/paircode.txt", 'w')
     f.write(code)
     f.close()
+    browser.reload()
+    browser.find_by_css(".token-access-new-button").find_by_css(".btn").find_by_css(".icon-plus")[0].click()
+    browser.find_by_id("token-new-form").find_by_css(".btn")[0].click()
+    code = browser.find_by_css(".token-claimcode")[0].html
+    gopath = os.environ['GOPATH']
+    tempath = gopath + "/temp"
+    if not os.path.exists(tempath):
+        os.makedirs(tempath)
+    f = open(tempath + "/invoicecode.txt", 'w')
+    f.write(code)
+    f.close()
     return code
 
 code = get_claim_code_from_server()
