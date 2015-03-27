@@ -15,8 +15,20 @@ var _ = Describe("RetrieveInvoice", func() {
 		pm := ku.GeneratePem()
 		apiuri := os.ExpandEnv("$RCROOTADDRESS")
 		webClient := Client{ApiUri: apiuri, Insecure: true, Pem: pm}
-		code := os.ExpandEnv("RETRIEVEPAIR")
-		token, _ := webClient.PairWithCode(code)
+		gopath := os.ExpandEnv("$GOPATH")
+		tempFolder := gopath + "/temp/"
+		code, err := ioutil.ReadFile(tempFolder + "retrievecode.txt")
+		if err != nil {
+			println(err.Error())
+		} else {
+			println(code)
+		}
+		token, err := webClient.PairWithCode(code)
+		if err != nil {
+			println(err.Error())
+		} else {
+			println(token.token)
+		}
 		webClient.Token = token
 		response, err := webClient.CreateInvoice(10, "USD")
 		if err != nil {
