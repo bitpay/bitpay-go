@@ -24,11 +24,11 @@ var _ = Describe("RetrieveInvoice", func() {
 		} else {
 			println(code)
 		}
-		token, err := webClient.PairWithCode(code)
+		token, err := webClient.PairWithCode(string(code))
 		if err != nil {
 			println(err.Error())
 		} else {
-			println(token.token)
+			println(token.Token)
 		}
 		webClient.Token = token
 		response, err := webClient.CreateInvoice(10, "USD")
