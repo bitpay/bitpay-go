@@ -20,7 +20,10 @@ var _ = Describe("CreateInvoice", func() {
 		code := os.ExpandEnv("$INVOICEPAIR")
 		token, _ := webClient.PairWithCode(code)
 		webClient.Token = token
-		response, _ := webClient.CreateInvoice(10, "USD")
+		response, err := webClient.CreateInvoice(10, "USD")
+		if err != nil {
+			println("The test errored when creating an invoice")
+		}
 		Expect(response.Price).To(Equal(10.00))
 		response, _ = webClient.CreateInvoice(0.00023, "BTC")
 		Expect(response.Price).To(Equal(0.00023))
