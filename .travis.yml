@@ -6,8 +6,8 @@ install:
   - go get github.com/onsi/gomega
   - go get github.com/btcsuite/btcd/btcec
   - go get github.com/btcsuite/btcutil/base58
-  - go get github.com/gorilla/mux
   - go get golang.org/x/crypto/ripemd160
+  - go get github.com/gorilla/mux
   - export PAIRINGCODE=$(python helpers/pair_steps.py)
   - export INVOICEPAIR=$(python helpers/pair_steps.py)
   - export RETRIEVEPAIR=$(python helpers/pair_steps.py)
