@@ -1,4 +1,6 @@
 # BitPay Library for Go 
+[![](https://travis-ci.org/bitpay/bitpay-go.svg?branch=master)](http://travis-ci.org/bitpay/bitpay-go)
+
 Powerful, flexible, lightweight interface to the BitPay Bitcoin Payment Gateway API.
 
 ## [Getting Started &raquo;](http://dev.bitpay.com/guides/go.html)
