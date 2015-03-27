@@ -30,6 +30,7 @@ var _ = Describe("RetrieveInvoice", func() {
 		} else {
 			println(token.Token)
 		}
+		Expect(token.Token).NotTo(BeNil())
 		webClient.Token = token
 		response, err := webClient.CreateInvoice(10, "USD")
 		if err != nil {
