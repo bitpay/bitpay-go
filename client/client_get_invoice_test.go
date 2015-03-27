@@ -12,7 +12,7 @@ import (
 
 var _ = Describe("RetrieveInvoice", func() {
 	It("Retrieves an invoice from the server with an id", func() {
-		time.Sleep(5)
+		time.Sleep(30)
 		pm := ku.GeneratePem()
 		apiuri := os.ExpandEnv("$RCROOTADDRESS")
 		webClient := Client{ApiUri: apiuri, Insecure: true, Pem: pm}

@@ -14,7 +14,7 @@ import (
 
 var _ = Describe("ClientPair", func() {
 	It("pairs with the server with a pairing code", func() {
-		time.Sleep(5)
+		time.Sleep(30)
 		pm := ku.GeneratePem()
 		apiuri := os.ExpandEnv("$RCROOTADDRESS")
 		webClient := Client{ApiUri: apiuri, Insecure: true, Pem: pm}

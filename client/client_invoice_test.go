@@ -14,7 +14,7 @@ import (
 
 var _ = Describe("CreateInvoice", func() {
 	It("creates an invoice for the price and currency sent", func() {
-		time.Sleep(5)
+		time.Sleep(30)
 		pm := ku.GeneratePem()
 		apiuri := os.ExpandEnv("$RCROOTADDRESS")
 		webClient := Client{ApiUri: apiuri, Insecure: true, Pem: pm}
