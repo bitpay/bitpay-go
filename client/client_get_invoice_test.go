@@ -18,9 +18,14 @@ var _ = Describe("RetrieveInvoice", func() {
 		code := os.ExpandEnv("RETRIEVEPAIR")
 		token, _ := webClient.PairWithCode(code)
 		webClient.Token = token
-		response, _ := webClient.CreateInvoice(10, "USD")
+		response, err:= webClient.CreateInvoice(10, "USD")
+		if err != nil {
+			println("the retrieve test errored while creating an invoice")
 		invoiceId := response.Id
-		retrievedInvoice, _ := webClient.GetInvoice(invoiceId)
+		retrievedInvoice, err := webClient.GetInvoice(invoiceId)
+		if err != nil {
+			println("The retrieve test errored while retrieving an invoice")
 		Expect(retrievedInvoice.Id).To(Equal(invoiceId))
+		Expect(retrievedInvoice.Price).To(Equal(response.Price))
 	})
 })
