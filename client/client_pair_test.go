@@ -5,24 +5,17 @@ import (
 	ku "github.com/bitpay/bitpay-go/key_utils"
 
 	"os"
+	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"io/ioutil"
-	"os/exec"
 )
 
 var _ = Describe("ClientPair", func() {
 	It("pairs with the server with a pairing code", func() {
+		time.Sleep(5)
 		pm := ku.GeneratePem()
-		gopath := os.ExpandEnv("$GOPATH")
-		pyloc := gopath + "/helpers/pair_steps.py"
-		cmd := exec.Command(pyloc)
-		stdout, _ := cmd.StdoutPipe()
-		cmd.Start()
-		byt, _ := ioutil.ReadAll(stdout)
-		code := string(byt)
-		println("Code: " + code)
+		code := os.ExpandEnv("$PAIRINGCODE")
 		apiuri := os.ExpandEnv("$RCROOTADDRESS")
 		webClient := Client{ApiUri: apiuri, Insecure: true, Pem: pm}
 		token, _ := webClient.PairWithCode(code)
