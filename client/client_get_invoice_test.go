@@ -5,6 +5,7 @@ import (
 	ku "github.com/bitpay/bitpay-go/key_utils"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"io/ioutil"
 	"os"
 	"time"
 )

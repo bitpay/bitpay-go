@@ -2,9 +2,7 @@ language: go
 # command to install dependencies
 install:
   - sudo pip install -r requirements.txt
-  - export PAIRINGCODE=$(python helpers/pair_steps.py)
-  - export INVOICEPAIR=$(python helpers/pair_steps.py)
-  - export RETRIEVEPAIR=$(python helpers/pair_steps.py)
+  - python helpers/pair_steps.py
 
 before_script:
   - go get github.com/onsi/ginkgo/ginkgo
