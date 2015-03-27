@@ -25,7 +25,7 @@ var _ = Describe("RetrieveInvoice", func() {
 		invoiceId := response.Id
 		retrievedInvoice, err := webClient.GetInvoice(invoiceId)
 		if err != nil {
-			println(webClient.ApiUri + ", " + webClient.Token.token + " errored retrieving an invoice: Error - " + err.Error())
+			println(webClient.ApiUri + " errored retrieving an invoice: Error - " + err.Error())
 		}
 		Expect(retrievedInvoice.Id).To(Equal(invoiceId))
 		Expect(retrievedInvoice.Price).To(Equal(response.Price))
