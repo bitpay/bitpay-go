@@ -17,41 +17,35 @@ def get_claim_code_from_server():
     browser.find_by_id("loginButton")[0].click()
     time.sleep(1)
     browser.visit(ROOT_ADDRESS + "/api-tokens")
-    browser.find_by_css(".token-access-new-button").find_by_css(".btn").find_by_css(".icon-plus")[0].click()
-    browser.find_by_id("token-new-form").find_by_css(".btn")[0].click()
-    code = browser.find_by_css(".token-claimcode")[0].html
+    code = get_code_from_page(browser, "thiscodewillneverbevalid")
     gopath = os.environ['GOPATH']
     tempath = gopath + "/temp"
     if not os.path.exists(tempath):
         os.makedirs(tempath)
-    f = open(tempath + "/retrievecode.txt", 'w')
-    f.write(code)
-    f.close()
+    write_code_to_file(code, tempath + "/retrievecode.txt")
+    print(code)
     time.sleep(10)
     browser.reload()
-    browser.find_by_css(".token-access-new-button").find_by_css(".btn").find_by_css(".icon-plus")[0].click()
-    browser.find_by_id("token-new-form").find_by_css(".btn")[0].click()
-    code = browser.find_by_css(".token-claimcode")[0].html
-    gopath = os.environ['GOPATH']
-    tempath = gopath + "/temp"
-    if not os.path.exists(tempath):
-        os.makedirs(tempath)
-    f = open(tempath + "/paircode.txt", 'w')
-    f.write(code)
-    f.close()
+    code = get_code_from_page(browser, code)
+    write_code_to_file(code, tempath + "/paircode.txt")
+    print(code)
     time.sleep(10)
     browser.reload()
-    browser.find_by_css(".token-access-new-button").find_by_css(".btn").find_by_css(".icon-plus")[0].click()
-    browser.find_by_id("token-new-form").find_by_css(".btn")[0].click()
-    code = browser.find_by_css(".token-claimcode")[0].html
-    gopath = os.environ['GOPATH']
-    tempath = gopath + "/temp"
-    if not os.path.exists(tempath):
-        os.makedirs(tempath)
-    f = open(tempath + "/invoicecode.txt", 'w')
-    f.write(code)
-    f.close()
+    code = get_code_from_page(browser, code)
+    write_code_to_file(code, tempath + "/invoicecode.txt")
+    print(code)
     return code
 
-code = get_claim_code_from_server()
-sys.stdout.write(code)
+def get_code_from_page(browser, code):
+    browser.find_by_css(".token-access-new-button").find_by_css(".btn").find_by_css(".icon-plus")[0].click()
+    browser.find_by_id("token-new-form").find_by_css(".btn")[0].click()
+    newcode = browser.find_by_css(".token-claimcode")[0].html
+    return newcode
+
+def write_code_to_file(code, fname):
+    f = open(fname, 'w')
+    f.write(code)
+    f.close()
+
+get_claim_code_from_server()
+print("done")

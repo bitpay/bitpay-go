@@ -14,7 +14,7 @@ import (
 
 var _ = Describe("CreateInvoice", func() {
 	It("creates an invoice for the price and currency sent", func() {
-		time.Sleep(30)
+		time.Sleep(3 * time.Second)
 		pm := ku.GeneratePem()
 		apiuri := os.ExpandEnv("$RCROOTADDRESS")
 		webClient := Client{ApiUri: apiuri, Insecure: true, Pem: pm}
@@ -23,14 +23,10 @@ var _ = Describe("CreateInvoice", func() {
 		code, err := ioutil.ReadFile(tempFolder + "invoicecode.txt")
 		if err != nil {
 			println(err.Error())
-		} else {
-			println(code)
 		}
 		token, err := webClient.PairWithCode(string(code))
 		if err != nil {
 			println(err.Error())
-		} else {
-			println(token.Token)
 		}
 		webClient.Token = token
 		response, err := webClient.CreateInvoice(10, "USD")

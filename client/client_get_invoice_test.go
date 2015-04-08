@@ -12,7 +12,7 @@ import (
 
 var _ = Describe("RetrieveInvoice", func() {
 	It("Retrieves an invoice from the server with an id", func() {
-		time.Sleep(30)
+		time.Sleep(3 * time.Second)
 		pm := ku.GeneratePem()
 		apiuri := os.ExpandEnv("$RCROOTADDRESS")
 		webClient := Client{ApiUri: apiuri, Insecure: true, Pem: pm}
@@ -21,14 +21,10 @@ var _ = Describe("RetrieveInvoice", func() {
 		code, err := ioutil.ReadFile(tempFolder + "retrievecode.txt")
 		if err != nil {
 			println(err.Error())
-		} else {
-			println(code)
 		}
 		token, err := webClient.PairWithCode(string(code))
 		if err != nil {
 			println(err.Error())
-		} else {
-			println(token.Token)
 		}
 		Expect(token.Token).NotTo(BeNil())
 		webClient.Token = token
