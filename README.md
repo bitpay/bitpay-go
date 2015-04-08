@@ -17,14 +17,25 @@ The reference project is at https://github.com/bitpay/bitpay-go-cli. You will ne
 In order to run the tests, follow these steps:
 
 1. Clone the repository
+
+    `git clone https://github.com/bitpay/bitpay-go-cli.git`
+
 1. Set the $GOPATH and $PATH variables
-  `source helpers/enviro.sh`
+
+    `source helpers/enviro.sh`
+
 1. Set your test api url (such as https://test.bitpay.com) and your username and password.
-  `source helpers/set_constants.sh <url> <username> <password>` 
+
+    `source helpers/set_constants.sh <url> <username> <password>` 
+
 1. For reasons that are not entirely clear, we need to delete all of the required files and re-import them.
-  `rm -rf src/github.com src/golang`
-  `go get -u -t github.com/bitpay/bitpay-go/client`
+  
+    `rm -rf src/github.com src/golang`
+
+    `go get -u -t github.com/bitpay/bitpay-go/client`
+
 1. We are now ready to run the tests.
+  
   `ginkgo -r src/github.com/bitpay/`
  
 ## Found a bug?
