@@ -27,6 +27,8 @@ In order to run the tests, follow these steps:
 1. Set your test api url (such as https://test.bitpay.com) and your username and password.
 
     `source helpers/set_constants.sh <url> <username> <password>` 
+    
+    `python helpers/pair_steps.py`
 
 1. For reasons that are not entirely clear, we need to delete all of the required files and re-import them.
   
