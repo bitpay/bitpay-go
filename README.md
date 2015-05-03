@@ -29,6 +29,8 @@ In order to run the tests, follow these steps:
     `source helpers/set_constants.sh <url> <username> <password>` 
     
     `python helpers/pair_steps.py`
+    
+   The python script should retrieve three pairing codes from the server and store them in three files in a `temp` directory in the main project directory, `temp/retrievecode.txt`, `temp/paircode.txt`, and `temp/invoicecode.txt`. If this does not go smoothly, you can manually add the pairing codes to those files by visiting (https://test.bitpay.com/dashboard/merchant/api-tokens) and creating three tokens, saving each pairing code into one of the files in temp.
 
 1. For reasons that are not entirely clear, we need to delete all of the required files and re-import them.
   
