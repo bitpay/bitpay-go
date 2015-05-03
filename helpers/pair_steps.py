@@ -39,6 +39,7 @@ def get_claim_code_from_server():
 def get_code_from_page(browser, code):
     browser.find_by_css(".token-access-new-button").find_by_css(".btn").find_by_css(".icon-plus")[0].click()
     browser.find_by_id("token-new-form").find_by_css(".btn")[0].click()
+    browser.reload()
     newcode = browser.find_by_css(".token-claimcode")[0].html
     return newcode
 
