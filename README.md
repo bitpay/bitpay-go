@@ -1,5 +1,7 @@
 # BitPay Library for Go 
-[![](https://travis-ci.org/bitpay/bitpay-go.svg?branch=master)](http://travis-ci.org/bitpay/bitpay-go)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://raw.githubusercontent.com/bitpay/bitpay-go/master/LICENSE)
+[![Travis Build](https://img.shields.io/travis/bitpay/bitpay-go.svg?style=flat-square)](http://travis-ci.org/bitpay/bitpay-go)
+
 
 Powerful, flexible, lightweight interface to the BitPay Bitcoin Payment Gateway API.
 
