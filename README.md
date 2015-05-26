@@ -7,7 +7,7 @@ Powerful, flexible, lightweight interface to the BitPay Bitcoin Payment Gateway 
 
 ## [Getting Started &raquo;](http://dev.bitpay.com/guides/go.html)
 
-Code documentation is available on [godoc](http://godoc.org/github.com/bitpay/bitpay-go)
+Code documentation is available on [godoc](http://godoc.org/github.com/bitpay/bitpay-go).
 ## API Documentation
 
 API Documentation is available on the [BitPay site](https://bitpay.com/api).
