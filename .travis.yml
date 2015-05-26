@@ -1,5 +1,6 @@
 language: go
 # command to install dependencies
+
 install:
   - sudo pip install -r requirements.txt
   - python helpers/pair_steps.py
@@ -11,10 +12,9 @@ before_script:
   - go get github.com/btcsuite/btcutil/base58
   - go get golang.org/x/crypto/ripemd160
   - go get github.com/gorilla/mux
-   
+  - go get github.com/axw/gocov/gocov
+  - go get github.com/mattn/goveralls 
+
 # command to run tests
 script: 
-  - ginkgo -r --keepGoing 
-
-after_success:
-    - bash <(curl -s https://codecov.io/bash)
+  - goveralls -service=travis-ci
