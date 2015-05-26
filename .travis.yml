@@ -17,4 +17,4 @@ before_script:
 
 # command to run tests
 script: 
-  - goveralls -service=travis-ci
+  - ginkgo -r --keepgoing
