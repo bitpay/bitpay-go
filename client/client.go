@@ -61,8 +61,6 @@ func (client *Client) CreateInvoice(price float64, currency string) (inv invoice
 		err = errors.New("BitPayArgumentError: invalid currency code")
 		return inv, err
 	}
-	url := client.ApiUri + "/invoices"
-	htclient := setHttpClient(client)
 	paylo := make(map[string]string)
 	var floatPrec int
 	if currency == "BTC" {
@@ -75,18 +73,17 @@ func (client *Client) CreateInvoice(price float64, currency string) (inv invoice
 	paylo["currency"] = currency
 	paylo["token"] = client.Token.Token
 	paylo["id"] = client.ClientId
-	payload, _ := json.Marshal(paylo)
-	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(payload))
-	req.Header.Add("content-type", "application/json")
-	req.Header.Add("accept", "application/json")
-	req.Header.Add("X-accept-version", "2.0.0")
-	publ := ku.ExtractCompressedPublicKey(client.Pem)
-	req.Header.Add("X-Identity", publ)
-	sig := ku.Sign(url+string(payload), client.Pem)
-	req.Header.Add("X-Signature", sig)
-	response, _ := htclient.Do(req)
+	response, _ := client.Post("invoices", paylo)
 	inv, err = processInvoice(response)
 	return inv, err
+}
+
+// PairWithFacade
+func (client *Client) PairWithFacade(str string) (tok Token, err error) {
+	paylo := make(map[string]string)
+	paylo["facade"] = str
+	tok, err = client.PairClient(paylo)
+	return tok, err
 }
 
 // PairWithCode retrieves a token from the server and authenticates the keys of the calling client. The string passed to the client is a "pairing code" that must be retrieved from https://bitpay.com/dashboard/merchant/api-tokens. PairWithCode returns a Token type that must be assigned to the Token field of a client in order for that client to create invoices. For example `client.Token = client.PairWithCode("abcdefg")`.
@@ -96,13 +93,18 @@ func (client *Client) PairWithCode(str string) (tok Token, err error) {
 		err = errors.New("BitPayArgumentError: invalid pairing code")
 		return tok, err
 	}
+	paylo := make(map[string]string)
+	paylo["pairingCode"] = str
+	tok, err = client.PairClient(paylo)
+	return tok, err
+}
+
+func (client *Client) PairClient(paylo map[string]string) (tok Token, err error) {
+	paylo["id"] = client.ClientId
 	sin := ku.GenerateSinFromPem(client.Pem)
 	client.ClientId = sin
 	url := client.ApiUri + "/tokens"
 	htclient := setHttpClient(client)
-	paylo := make(map[string]string)
-	paylo["id"] = client.ClientId
-	paylo["pairingCode"] = str
 	payload, _ := json.Marshal(paylo)
 	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(payload))
 	req.Header.Add("content-type", "application/json")
@@ -122,6 +124,22 @@ func (client *Client) PairWithCode(str string) (tok Token, err error) {
 	return tok, err
 }
 
+func (client *Client) Post(path string, paylo map[string]string) (response *http.Response, err error) {
+	url := client.ApiUri + "/" + path
+	htclient := setHttpClient(client)
+	payload, _ := json.Marshal(paylo)
+	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(payload))
+	req.Header.Add("content-type", "application/json")
+	req.Header.Add("accept", "application/json")
+	req.Header.Add("X-accept-version", "2.0.0")
+	publ := ku.ExtractCompressedPublicKey(client.Pem)
+	req.Header.Add("X-Identity", publ)
+	sig := ku.Sign(url+string(payload), client.Pem)
+	req.Header.Add("X-Signature", sig)
+	response, err = htclient.Do(req)
+	return response, err
+}
+
 // GetInvoice is a public facade method, any client which has the ApiUri field set can retrieve an invoice from that endpoint, provided they have the invoice id.
 func (client *Client) GetInvoice(invId string) (inv invoice, err error) {
 	url := client.ApiUri + "/invoices/" + invId
@@ -129,6 +147,43 @@ func (client *Client) GetInvoice(invId string) (inv invoice, err error) {
 	response, _ := htclient.Get(url)
 	inv, err = processInvoice(response)
 	return inv, err
+}
+
+func (client *Client) GetTokens() (tokes []map[string]string, err error) {
+	url := client.ApiUri + "/tokens"
+	htclient := setHttpClient(client)
+	req, _ := http.NewRequest("GET", url, nil)
+	req.Header.Add("content-type", "application/json")
+	req.Header.Add("accept", "application/json")
+	req.Header.Add("X-accept-version", "2.0.0")
+	publ := ku.ExtractCompressedPublicKey(client.Pem)
+	req.Header.Add("X-Identity", publ)
+	sig := ku.Sign(url, client.Pem)
+	req.Header.Add("X-Signature", sig)
+	response, _ := htclient.Do(req)
+	defer response.Body.Close()
+	contents, _ := ioutil.ReadAll(response.Body)
+	var jsonContents map[string]interface{}
+	json.Unmarshal(contents, &jsonContents)
+	if response.StatusCode/100 != 2 {
+		err = processErrorMessage(response, jsonContents)
+	} else {
+		this, _ := json.Marshal(jsonContents["data"])
+		json.Unmarshal(this, &tokes)
+		err = nil
+	}
+	return tokes, nil
+}
+
+func (client *Client) GetToken(facade string) (token string, err error) {
+	tokens, _ := client.GetTokens()
+	for _, token := range tokens {
+		toke, ok := token[facade]
+		if ok {
+			return toke, nil
+		}
+	}
+	return "error", errors.New("facade not available in tokens")
 }
 
 func setHttpClient(client *Client) *http.Client {

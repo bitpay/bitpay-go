@@ -1,11 +1,11 @@
-# BitPay Library for Go 
+# BitPay Library for Go
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://raw.githubusercontent.com/bitpay/bitpay-go/master/LICENSE)
 [![Travis Build](https://img.shields.io/travis/bitpay/bitpay-go.svg?style=flat-square)](http://travis-ci.org/bitpay/bitpay-go)
 
 
 Powerful, flexible, lightweight interface to the BitPay Bitcoin Payment Gateway API.
 
-## [Getting Started &raquo;](http://dev.bitpay.com/guides/go.html)
+## [Getting Started &raquo;](https://github.com/bitpay/bitpay-go/blob/master/GUIDE.md)
 
 Code documentation is available on [godoc](http://godoc.org/github.com/bitpay/bitpay-go).
 ## API Documentation
@@ -14,36 +14,35 @@ API Documentation is available on the [BitPay site](https://bitpay.com/api).
 
 ## Running the Tests
 
-The reference project is at https://github.com/bitpay/bitpay-go-cli. You will need a working go installation to follow these instructions.
-
 In order to run the tests, follow these steps:
-
-1. Clone the repository
-
-    `git clone https://github.com/bitpay/bitpay-go-cli.git`
 
 1. Set the $GOPATH and $PATH variables
 
-    `source helpers/enviro.sh`
+1. Install the dependencies
 
-1. Set your test api url (such as https://test.bitpay.com) and your username and password.
+ ```bash
+$ go get github.com/btcsuite/btcutil
+$ go get github.com/gorilla/mux
+$ go get github.com/onsi/ginkgo
+$ go get golang.org/x/crypto
+```
 
-    `source helpers/set_constants.sh <url> <username> <password>` 
-    
-    `python helpers/pair_steps.py`
-    
-   The python script should retrieve three pairing codes from the server and store them in three files in a `temp` directory in the main project directory, `temp/retrievecode.txt`, `temp/paircode.txt`, and `temp/invoicecode.txt`. If this does not go smoothly, you can manually add the pairing codes to those files by visiting (https://test.bitpay.com/dashboard/merchant/api-tokens) and creating three tokens, saving each pairing code into one of the files in temp.
+1. Clone the repository
 
-1. For reasons that are not entirely clear, we need to delete all of the required files and re-import them.
-  
-    `rm -rf src/github.com src/golang`
+    `git clone https://github.com/bitpay/bitpay-go.git`
 
-    `go get -u -t github.com/bitpay/bitpay-go/client`
+    Into src/github.com/bitpay/bitpay-go/
+
+1. Set the environment variables `BITPAYAPI` & `BITPAYPEM` to "https://test.bitpay.com" and a valid PEM value.
+
+    This is slightly tricky, the PEM file has to already be paired with a merchant token on your bitpay account. To do this it is probably best to use the [bitpay test helper](https://github.com/bitpay/bitpay-test-helper).
+
+1. You will also need a paid invoice on the server. Set the environment variable `INVOICEID` to the id of a paid invoice on the server.
 
 1. We are now ready to run the tests.
-  
+
   `ginkgo -r src/github.com/bitpay/`
- 
+
 ## Found a bug?
 Let us know! Send a pull request or a patch. Questions? Ask! We're here to help. We will respond to all filed issues.
 

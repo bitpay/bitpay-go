@@ -18,9 +18,7 @@ The bitpay client creates a cryptographically secure connection to your server b
 ## Pairing
 Most calls to the BitPay REST API require that your client is paired with the bitpay.com server.  To pair with bitpay.com you need to have an approved merchant account.
 
-Your client can be paired via the `pos` (point-of-sale) facade.  The `pos` facade allows for invoices to be created and retrieved.
-
-_For development or quick deployment purposes, consider the [BitPay Go Command-Line Interface](https://github.com/philosodad/bitpay-go-cli) to simplify the deployment process_
+The BitPay test helper is probably the easi
 
 ### Pairing Programatically
 
@@ -32,9 +30,10 @@ The example below demonstrates this, assuming that the bitpay-go client is impor
 
 ```go
 pemString := ku.GeneratePem()
-apiUri := "https://bitpay.com" 
-webClient := Client{ApiUri: apiUri, Pem: pemString} 
-token := webClient.PairWithCode(pairingCode) 
+id := ku.GenerateSinFromPem(pemString)
+apiUri := "https://bitpay.com"
+webClient := Client{ApiUri: apiUri, Pem: pemString, ClientId: id}
+token := webClient.PairWithCode(pairingCode)
 webClient.Token = token
 ```    
 
@@ -56,11 +55,10 @@ client.GetInvoice('PvVhgBfA7wKPWhuVC24rJo')
 
 ## Testnet Usage
 
-During development and testing, take advantage of the [Bitcoin TestNet](https://en.bitcoin.it/wiki/Testnet) by creating a client with the ApiUri value "https://test.bitpay.com" 
+During development and testing, take advantage of the [Bitcoin TestNet](https://en.bitcoin.it/wiki/Testnet) by creating a client with the ApiUri value "https://test.bitpay.com"
 
 Note that in order to pair with testnet, you will need a pairing code from test.bitpay.com.
 
 ## API Documentation
 
 API Documentation is available on the [BitPay site](https://bitpay.com/api).
-
