@@ -28,3 +28,5 @@ enviro.sh
 
 src/
 temp/
+/bin
+.pem.data
