@@ -13,4 +13,4 @@ before_script:
   - go get github.com/mattn/goveralls 
 
 script: 
-  - ginkgo -r --keepgoing
+  - ginkgo -r -keepgoing
