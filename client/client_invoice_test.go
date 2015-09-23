@@ -19,7 +19,7 @@ var _ = Describe("CreateInvoice", func() {
 		time.Sleep(3 * time.Second)
 		pm := os.ExpandEnv("$BITPAYPEM")
 		pm = strings.Replace(pm, "\\n", "\n", -1)
-		apiuri := os.ExpandEnv("$RCROOTADDRESS")
+		apiuri := os.ExpandEnv("$BITPAYAPI")
 		webClient := Client{ApiUri: apiuri, Insecure: true, Pem: pm, ClientId: ku.GenerateSinFromPem(pm)}
 		mertok, _ := webClient.GetToken("merchant")
 		params := make(map[string]string)

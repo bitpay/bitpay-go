@@ -19,7 +19,7 @@ var _ = Describe("ClientPair", func() {
 		time.Sleep(3 * time.Second)
 		pm := os.ExpandEnv("$BITPAYPEM")
 		pm = strings.Replace(pm, "\\n", "\n", -1)
-		apiuri := os.ExpandEnv("$RCROOTADDRESS")
+		apiuri := os.ExpandEnv("$BITPAYAPI")
 		webClient := Client{ApiUri: apiuri, Insecure: true, Pem: pm, ClientId: ku.GenerateSinFromPem(pm)}
 		mertok, _ := webClient.GetToken("merchant")
 		params := make(map[string]string)
@@ -33,7 +33,7 @@ var _ = Describe("ClientPair", func() {
 		json.Unmarshal(contents, &jsonContents)
 		var tok Token
 		if res.StatusCode/100 != 2 {
-			Expect(res.StatusCode).To(Equal(200))
+			Expect(res.StatusCode).To(Equal(200), string(contents)+"token: "+mertok)
 		} else {
 			tok, err = processToken(res, jsonContents)
 			err = nil

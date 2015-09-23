@@ -13,7 +13,7 @@ var _ = Describe("RetrieveInvoice", func() {
 	It("Retrieves an invoice from the server with an id", func() {
 		time.Sleep(3 * time.Second)
 		pm := os.ExpandEnv("$BITPAYPEM")
-		apiuri := os.ExpandEnv("$RCROOTADDRESS")
+		apiuri := os.ExpandEnv("$BITPAYAPI")
 		webClient := Client{ApiUri: apiuri, Insecure: true, Pem: pm}
 		invoiceId := os.ExpandEnv("$INVOICEID")
 		retrievedInvoice, err := webClient.GetInvoice(invoiceId)

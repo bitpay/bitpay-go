@@ -25,6 +25,8 @@ _testmain.go
 *.log
 
 enviro.sh
+.bpenv
+
 
 src/
 temp/
