@@ -6,11 +6,12 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"errors"
-	ku "github.com/bitpay/bitpay-go/key_utils"
 	"io/ioutil"
 	"net/http"
 	"regexp"
 	"strconv"
+
+	ku "github.com/bitpay/bitpay-go/key_utils"
 )
 
 // The Client struct maintains the state of the current client. To use a client from session to session, the Pem and Token will need to be saved and used in the next client. The ClientId can be recreated by using the key_util.GenerateSinFromPem func, and the ApiUri will generally be https://bitpay.com. Insecure should generally be set to false or not set at all, there are a limited number of test scenarios in which it must be set to true.
@@ -34,7 +35,7 @@ type Token struct {
 
 // Go struct mapping the JSON returned from the BitPay server when sending a POST or GET request to /invoices.
 
-type invoice struct {
+type Invoice struct {
 	Url             string
 	Status          string
 	BtcPrice        string
@@ -55,11 +56,10 @@ type invoice struct {
 }
 
 // CreateInvoice returns an invoice type or pass the error from the server. The method will create an invoice on the BitPay server.
-func (client *Client) CreateInvoice(price float64, currency string) (inv invoice, err error) {
+func (client *Client) CreateInvoice(price float64, currency string) (*Invoice, error) {
 	match, _ := regexp.MatchString("^[[:upper:]]{3}$", currency)
 	if !match {
-		err = errors.New("BitPayArgumentError: invalid currency code")
-		return inv, err
+		return nil, errors.New("BitPayArgumentError: invalid currency code")
 	}
 	paylo := make(map[string]string)
 	var floatPrec int
@@ -73,62 +73,75 @@ func (client *Client) CreateInvoice(price float64, currency string) (inv invoice
 	paylo["currency"] = currency
 	paylo["token"] = client.Token.Token
 	paylo["id"] = client.ClientId
-	response, _ := client.Post("invoices", paylo)
-	inv, err = processInvoice(response)
-	return inv, err
+	response, err := client.Post("invoices", paylo)
+	if err != nil {
+		return nil, err
+	}
+	return processInvoice(response)
 }
 
 // PairWithFacade
-func (client *Client) PairWithFacade(str string) (tok Token, err error) {
+func (client *Client) PairWithFacade(str string) (*Token, error) {
 	paylo := make(map[string]string)
 	paylo["facade"] = str
-	tok, err = client.PairClient(paylo)
-	return tok, err
+	return client.PairClient(paylo)
 }
 
 // PairWithCode retrieves a token from the server and authenticates the keys of the calling client. The string passed to the client is a "pairing code" that must be retrieved from https://bitpay.com/dashboard/merchant/api-tokens. PairWithCode returns a Token type that must be assigned to the Token field of a client in order for that client to create invoices. For example `client.Token = client.PairWithCode("abcdefg")`.
-func (client *Client) PairWithCode(str string) (tok Token, err error) {
+func (client *Client) PairWithCode(str string) (*Token, error) {
 	match, _ := regexp.MatchString("^[[:alnum:]]{7}$", str)
 	if !match {
-		err = errors.New("BitPayArgumentError: invalid pairing code")
-		return tok, err
+		return nil, errors.New("BitPayArgumentError: invalid pairing code")
 	}
 	paylo := make(map[string]string)
 	paylo["pairingCode"] = str
-	tok, err = client.PairClient(paylo)
-	return tok, err
+	return client.PairClient(paylo)
 }
 
-func (client *Client) PairClient(paylo map[string]string) (tok Token, err error) {
+func (client *Client) PairClient(paylo map[string]string) (*Token, error) {
 	paylo["id"] = client.ClientId
 	sin := ku.GenerateSinFromPem(client.Pem)
 	client.ClientId = sin
 	url := client.ApiUri + "/tokens"
 	htclient := setHttpClient(client)
-	payload, _ := json.Marshal(paylo)
-	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(payload))
+	payload, err := json.Marshal(paylo)
+	if err != nil {
+		return nil, err
+	}
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
 	req.Header.Add("content-type", "application/json")
 	req.Header.Add("accept", "application/json")
 	req.Header.Add("X-accept-version", "2.0.0")
-	response, _ := htclient.Do(req)
-	defer response.Body.Close()
-	contents, _ := ioutil.ReadAll(response.Body)
-	var jsonContents map[string]interface{}
-	json.Unmarshal(contents, &jsonContents)
-	if response.StatusCode/100 != 2 {
-		err = processErrorMessage(response, jsonContents)
-	} else {
-		tok, err = processToken(response, jsonContents)
-		err = nil
+	response, err := htclient.Do(req)
+	if err != nil {
+		return nil, err
 	}
-	return tok, err
+	defer response.Body.Close()
+	contents, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+	var jsonContents map[string]interface{}
+	if err = json.Unmarshal(contents, &jsonContents); err != nil {
+		return nil, err
+	}
+	if response.StatusCode/100 != 2 {
+		return nil, processErrorMessage(response, jsonContents)
+	}
+	return processToken(response, jsonContents)
 }
 
-func (client *Client) Post(path string, paylo map[string]string) (response *http.Response, err error) {
+func (client *Client) Post(path string, paylo map[string]string) (*http.Response, error) {
 	url := client.ApiUri + "/" + path
 	htclient := setHttpClient(client)
-	payload, _ := json.Marshal(paylo)
-	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(payload))
+	payload, err := json.Marshal(paylo)
+	if err != nil {
+		return nil, err
+	}
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
+	if err != nil {
+		return nil, err
+	}
 	req.Header.Add("content-type", "application/json")
 	req.Header.Add("accept", "application/json")
 	req.Header.Add("X-accept-version", "2.0.0")
@@ -136,23 +149,27 @@ func (client *Client) Post(path string, paylo map[string]string) (response *http
 	req.Header.Add("X-Identity", publ)
 	sig := ku.Sign(url+string(payload), client.Pem)
 	req.Header.Add("X-Signature", sig)
-	response, err = htclient.Do(req)
-	return response, err
+	return htclient.Do(req)
 }
 
 // GetInvoice is a public facade method, any client which has the ApiUri field set can retrieve an invoice from that endpoint, provided they have the invoice id.
-func (client *Client) GetInvoice(invId string) (inv invoice, err error) {
+func (client *Client) GetInvoice(invId string) (*Invoice, error) {
 	url := client.ApiUri + "/invoices/" + invId
 	htclient := setHttpClient(client)
-	response, _ := htclient.Get(url)
-	inv, err = processInvoice(response)
-	return inv, err
+	response, err := htclient.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	return processInvoice(response)
 }
 
 func (client *Client) GetTokens() (tokes []map[string]string, err error) {
 	url := client.ApiUri + "/tokens"
 	htclient := setHttpClient(client)
-	req, _ := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
 	req.Header.Add("content-type", "application/json")
 	req.Header.Add("accept", "application/json")
 	req.Header.Add("X-accept-version", "2.0.0")
@@ -160,23 +177,35 @@ func (client *Client) GetTokens() (tokes []map[string]string, err error) {
 	req.Header.Add("X-Identity", publ)
 	sig := ku.Sign(url, client.Pem)
 	req.Header.Add("X-Signature", sig)
-	response, _ := htclient.Do(req)
-	defer response.Body.Close()
-	contents, _ := ioutil.ReadAll(response.Body)
-	var jsonContents map[string]interface{}
-	json.Unmarshal(contents, &jsonContents)
-	if response.StatusCode/100 != 2 {
-		err = processErrorMessage(response, jsonContents)
-	} else {
-		this, _ := json.Marshal(jsonContents["data"])
-		json.Unmarshal(this, &tokes)
-		err = nil
+	response, err := htclient.Do(req)
+	if err != nil {
+		return nil, err
 	}
-	return tokes, nil
+	defer response.Body.Close()
+	contents, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+	var jsonContents map[string]interface{}
+	if err = json.Unmarshal(contents, &jsonContents); err != nil {
+		return nil, err
+	}
+	if response.StatusCode/100 != 2 {
+		return nil, processErrorMessage(response, jsonContents)
+	}
+	this, err := json.Marshal(jsonContents["data"])
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(this, &tokes)
+	return tokes, err
 }
 
 func (client *Client) GetToken(facade string) (token string, err error) {
-	tokens, _ := client.GetTokens()
+	tokens, err := client.GetTokens()
+	if err != nil {
+		return "", err
+	}
 	for _, token := range tokens {
 		toke, ok := token[facade]
 		if ok {
@@ -206,24 +235,35 @@ func processErrorMessage(response *http.Response, jsonContents map[string]interf
 	return errors.New(contentError)
 }
 
-func processToken(response *http.Response, jsonContents map[string]interface{}) (tok Token, err error) {
+func processToken(response *http.Response, jsonContents map[string]interface{}) (*Token, error) {
 	datarray := jsonContents["data"].([]interface{})
-	data, _ := json.Marshal(datarray[0])
-	json.Unmarshal(data, &tok)
-	return tok, nil
+	data, err := json.Marshal(datarray[0])
+	if err != nil {
+		return nil, err
+	}
+	tok := new(Token)
+	err = json.Unmarshal(data, tok)
+	return tok, err
 }
 
-func processInvoice(response *http.Response) (inv invoice, err error) {
+func processInvoice(response *http.Response) (*Invoice, error) {
 	defer response.Body.Close()
-	contents, _ := ioutil.ReadAll(response.Body)
-	var jsonContents map[string]interface{}
-	json.Unmarshal(contents, &jsonContents)
-	if response.StatusCode/100 != 2 {
-		err = processErrorMessage(response, jsonContents)
-	} else {
-		this, _ := json.Marshal(jsonContents["data"])
-		json.Unmarshal(this, &inv)
-		err = nil
+	contents, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
 	}
+	var jsonContents map[string]interface{}
+	if err := json.Unmarshal(contents, &jsonContents); err != nil {
+		return nil, err
+	}
+	if response.StatusCode/100 != 2 {
+		return nil, processErrorMessage(response, jsonContents)
+	}
+	this, err := json.Marshal(jsonContents["data"])
+	if err != nil {
+		return nil, err
+	}
+	inv := new(Invoice)
+	err = json.Unmarshal(this, inv)
 	return inv, err
 }
