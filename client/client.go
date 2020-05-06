@@ -144,7 +144,14 @@ func (client *Client) Post(path string, paylo map[string]string) (response *http
 func (client *Client) GetInvoice(invId string) (inv invoice, err error) {
 	url := client.ApiUri + "/invoices/" + invId
 	htclient := setHttpClient(client)
-	response, _ := htclient.Get(url)
+	req, _ := http.NewRequest("GET", url, nil)
+	req.Header.Add("content-type", "application/json")
+	req.Header.Add("X-accept-version", "2.0.0")
+	publ := ku.ExtractCompressedPublicKey(client.Pem)
+	req.Header.Add("X-Identity", publ)
+	sig := ku.Sign(url, client.Pem)
+	req.Header.Add("X-Signature", sig)
+	response, _ := htclient.Do(req)
 	inv, err = processInvoice(response)
 	return inv, err
 }
