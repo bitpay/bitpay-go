@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
+	"time"
 )
 
 // The Client struct maintains the state of the current client. To use a client from session to session, the Pem and Token will need to be saved and used in the next client. The ClientId can be recreated by using the key_util.GenerateSinFromPem func, and the ApiUri will generally be https://bitpay.com. Insecure should generally be set to false or not set at all, there are a limited number of test scenarios in which it must be set to true.
@@ -52,6 +53,57 @@ type invoice struct {
 	ExceptionStatus bool
 	PaymentUrls     map[string]string
 	Token           string
+}
+
+type Payout struct {
+	Id                string
+	Account           string
+	Reference         string
+	SupportPhone      string
+	Status            string
+	Amount            float64
+	PercentFee        float64
+	Fee               float64
+	DepositTotal      float64
+	Btc               float64
+	Currency          string
+	RequestDate       time.Time
+	EffectiveDate     time.Time
+	NotificationUrl   string
+	NotificationEmail string
+	Instructions      []Instruction
+	Token             string
+}
+
+type Btc struct {
+	Unpaid int
+	Paid   int
+}
+
+type Instruction struct {
+	Id             string
+	Amount         float64
+	Btc            Btc
+	Address        string
+	Label          string
+	Status         string
+	WalletProvider string
+	Receiverinfo   Receiverinfo
+}
+
+type Receiverinfo struct {
+	Name         string
+	EmailAddress string
+	Address      Address
+}
+
+type Address struct {
+	StreetAddress1 string
+	StreetAddress2 string
+	Locality       string
+	Region         string
+	PostalCode     string
+	Country        string
 }
 
 // CreateInvoice returns an invoice type or pass the error from the server. The method will create an invoice on the BitPay server.
@@ -124,7 +176,7 @@ func (client *Client) PairClient(paylo map[string]string) (tok Token, err error)
 	return tok, err
 }
 
-func (client *Client) Post(path string, paylo map[string]string) (response *http.Response, err error) {
+func (client *Client) Post(path string, paylo interface{}) (response *http.Response, err error) {
 	url := client.ApiUri + "/" + path
 	htclient := setHttpClient(client)
 	payload, _ := json.Marshal(paylo)
@@ -233,4 +285,18 @@ func processInvoice(response *http.Response) (inv invoice, err error) {
 		err = nil
 	}
 	return inv, err
+}
+
+// CreatePayout create and returns a PayOut.
+func (client *Client) CreatePayout(p Payout) (payout Payout, err error) {
+	match, _ := regexp.MatchString("^[[:upper:]]{3}$", p.Currency)
+	if !match {
+		err = errors.New("BitPayArgumentError: invalid currency code")
+		return payout, err
+	}
+	p.Token = client.Token.Token
+	response, err := client.Post("payouts", p)
+	body, err := ioutil.ReadAll(response.Body)
+	json.Unmarshal(body, &payout)
+	return payout, err
 }
