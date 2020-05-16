@@ -37,33 +37,33 @@ type Invoice struct {
 	Token                 string
 	Price                 float64
 	Currency              string
-	OrderId               string
-	ItemDesc              string
-	ItemCode              string
-	NotificationEmail     string
-	NotificationUrl       string
-	RedirectUrl           string
-	PosData               string
-	TransactionSpeed      string
-	FullNotifications     string
-	ExtendedNotifications string
-	Physical              string
-	Buyer                 Buyer
-	PaymentCurrencies     []string
-	JsonPayProRequired    string
+	OrderId               string   `json:",omitempty"`
+	ItemDesc              string   `json:",omitempty"`
+	ItemCode              string   `json:",omitempty"`
+	NotificationEmail     string   `json:",omitempty"`
+	NotificationUrl       string   `json:",omitempty"`
+	RedirectUrl           string   `json:",omitempty"`
+	PosData               string   `json:",omitempty"`
+	TransactionSpeed      string   `json:",omitempty"`
+	FullNotifications     string   `json:",omitempty"`
+	ExtendedNotifications string   `json:",omitempty"`
+	Physical              string   `json:",omitempty"`
+	Buyer                 Buyer    `json:",omitempty"`
+	PaymentCurrencies     []string `json:",omitempty"`
+	JsonPayProRequired    string   `json:",omitempty"`
 }
 
 type Buyer struct {
-	Name       string
-	Address1   string
-	Address2   string
-	Locality   string
-	Region     string
-	PostalCode string
-	Country    string
-	Email      string
-	Phone      string
-	Notify     bool
+	Name       string `json:",omitempty"`
+	Address1   string `json:",omitempty"`
+	Address2   string `json:",omitempty"`
+	Locality   string `json:",omitempty"`
+	Region     string `json:",omitempty"`
+	PostalCode string `json:",omitempty"`
+	Country    string `json:",omitempty"`
+	Email      string `json:",omitempty"`
+	Phone      string `json:",omitempty"`
+	Notify     bool   `json:",omitempty"`
 }
 
 // Go struct mapping the JSON returned from the BitPay server when sending a POST or GET request to /invoices.
