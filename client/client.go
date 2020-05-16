@@ -48,29 +48,29 @@ type Invoice struct {
 	FullNotifications     string   `json:",omitempty"`
 	ExtendedNotifications string   `json:",omitempty"`
 	Physical              string   `json:",omitempty"`
-	Buyer                 Buyer    `json:",omitempty"`
+	Buyer                 *Buyer   `json:",omitempty"`
 	PaymentCurrencies     []string `json:",omitempty"`
 	JsonPayProRequired    string   `json:",omitempty"`
 	//Additional Response Fiend
-	Url                            string                         `json:",omitempty"`
-	Status                         string                         `json:",omitempty"`
-	InvoiceTime                    time.Time                      `json:",omitempty"`
-	ExpirationTime                 time.Time                      `json:",omitempty"`
-	CurrentTime                    time.Time                      `json:",omitempty"`
-	Id                             string                         `json:",omitempty"`
-	LowFeeDetected                 bool                           `json:",omitempty"`
-	AmountPaid                     float64                        `json:",omitempty"`
-	DisplayAmountPaid              float64                        `json:",omitempty"`
-	ExceptionStatus                bool                           `json:",omitempty"`
-	RefundAddressRequestPending    bool                           `json:",omitempty"`
-	BuyerProvidedInfo              Buyer                          `json:",omitempty"`
-	PaymentSubtotals               PaymentTotals                  `json:",omitempty"`
-	PaymentTotals                  PaymentTotals                  `json:",omitempty"`
-	PaymentDisplayTotals           PaymentDisplay                 `json:",omitempty"`
-	PaymentDisplaySubTotals        PaymentDisplay                 `json:",omitempty"`
-	ExchangeRates                  ExchangeRates                  `json:",omitempty"`
-	SupportedTransactionCurrencies SupportedTransactionCurrencies `json:",omitempty"`
-	MinerFees                      MinerFees                      `json:",omitempty"`
+	Url                            string                          `json:",omitempty"`
+	Status                         string                          `json:",omitempty"`
+	InvoiceTime                    *time.Time                      `json:",omitempty"`
+	ExpirationTime                 *time.Time                      `json:",omitempty"`
+	CurrentTime                    *time.Time                      `json:",omitempty"`
+	Id                             string                          `json:",omitempty"`
+	LowFeeDetected                 bool                            `json:",omitempty"`
+	AmountPaid                     float64                         `json:",omitempty"`
+	DisplayAmountPaid              float64                         `json:",omitempty"`
+	ExceptionStatus                bool                            `json:",omitempty"`
+	RefundAddressRequestPending    bool                            `json:",omitempty"`
+	BuyerProvidedInfo              *Buyer                          `json:",omitempty"`
+	PaymentSubtotals               *PaymentTotals                  `json:",omitempty"`
+	PaymentTotals                  *PaymentTotals                  `json:",omitempty"`
+	PaymentDisplayTotals           *PaymentDisplay                 `json:",omitempty"`
+	PaymentDisplaySubTotals        *PaymentDisplay                 `json:",omitempty"`
+	ExchangeRates                  *ExchangeRates                  `json:",omitempty"`
+	SupportedTransactionCurrencies *SupportedTransactionCurrencies `json:",omitempty"`
+	MinerFees                      *MinerFees                      `json:",omitempty"`
 }
 
 type Buyer struct {
@@ -112,36 +112,36 @@ type PaymentDisplay struct {
 }
 
 type ExchangeRates struct {
-	Btc  PaymentTotals
-	Bch  PaymentTotals
-	Eth  PaymentTotals
-	Gusd PaymentTotals
-	Pax  PaymentTotals
-	Busd PaymentTotals
-	Usdc PaymentTotals
-	Xrp  PaymentTotals
+	Btc  *PaymentTotals
+	Bch  *PaymentTotals
+	Eth  *PaymentTotals
+	Gusd *PaymentTotals
+	Pax  *PaymentTotals
+	Busd *PaymentTotals
+	Usdc *PaymentTotals
+	Xrp  *PaymentTotals
 }
 
 type SupportedTransactionCurrencies struct {
-	Btc  PaymentTotals
-	Bch  PaymentTotals
-	Eth  PaymentTotals
-	Gusd PaymentTotals
-	Pax  PaymentTotals
-	Busd PaymentTotals
-	Usdc PaymentTotals
-	Xrp  PaymentTotals
+	Btc  *PaymentTotals
+	Bch  *PaymentTotals
+	Eth  *PaymentTotals
+	Gusd *PaymentTotals
+	Pax  *PaymentTotals
+	Busd *PaymentTotals
+	Usdc *PaymentTotals
+	Xrp  *PaymentTotals
 }
 
 type MinerFees struct {
-	Btc  PaymentTotals
-	Bch  PaymentTotals
-	Eth  PaymentTotals
-	Gusd PaymentTotals
-	Pax  PaymentTotals
-	Busd PaymentTotals
-	Usdc PaymentTotals
-	Xrp  PaymentTotals
+	Btc  *PaymentTotals
+	Bch  *PaymentTotals
+	Eth  *PaymentTotals
+	Gusd *PaymentTotals
+	Pax  *PaymentTotals
+	Busd *PaymentTotals
+	Usdc *PaymentTotals
+	Xrp  *PaymentTotals
 }
 
 // Go struct mapping the JSON returned from the BitPay server when sending a POST or GET request to /invoices.
@@ -296,7 +296,7 @@ func (client *Client) Post(path string, paylo interface{}) (response *http.Respo
 }
 
 // GetInvoice is a public facade method, any client which has the ApiUri field set can retrieve an invoice from that endpoint, provided they have the invoice id.
-func (client *Client) GetInvoice(invId string) (inv invoice, err error) {
+func (client *Client) GetInvoice(invId string) (inv Invoice, err error) {
 	url := client.ApiUri + "/invoices/" + invId
 	htclient := setHttpClient(client)
 	req, _ := http.NewRequest("GET", url, nil)
@@ -375,7 +375,7 @@ func processToken(response *http.Response, jsonContents map[string]interface{}) 
 	return tok, nil
 }
 
-func processInvoice(response *http.Response) (inv invoice, err error) {
+func processInvoice(response *http.Response) (inv Invoice, err error) {
 	defer response.Body.Close()
 	contents, _ := ioutil.ReadAll(response.Body)
 	var jsonContents map[string]interface{}
