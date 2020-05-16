@@ -34,9 +34,9 @@ type Token struct {
 }
 
 type Invoice struct {
-	Token                 string
-	Price                 float64
-	Currency              string
+	Token                 string   `json:",omitempty"`
+	Price                 float64  `json:",omitempty"`
+	Currency              string   `json:",omitempty"`
 	OrderId               string   `json:",omitempty"`
 	ItemDesc              string   `json:",omitempty"`
 	ItemCode              string   `json:",omitempty"`
@@ -51,6 +51,26 @@ type Invoice struct {
 	Buyer                 Buyer    `json:",omitempty"`
 	PaymentCurrencies     []string `json:",omitempty"`
 	JsonPayProRequired    string   `json:",omitempty"`
+	//Additional Response Fiend
+	Url                            string                         `json:",omitempty"`
+	Status                         string                         `json:",omitempty"`
+	InvoiceTime                    time.Time                      `json:",omitempty"`
+	ExpirationTime                 time.Time                      `json:",omitempty"`
+	CurrentTime                    time.Time                      `json:",omitempty"`
+	Id                             string                         `json:",omitempty"`
+	LowFeeDetected                 bool                           `json:",omitempty"`
+	AmountPaid                     float64                        `json:",omitempty"`
+	DisplayAmountPaid              float64                        `json:",omitempty"`
+	ExceptionStatus                bool                           `json:",omitempty"`
+	RefundAddressRequestPending    bool                           `json:",omitempty"`
+	BuyerProvidedInfo              Buyer                          `json:",omitempty"`
+	PaymentSubtotals               PaymentTotals                  `json:",omitempty"`
+	PaymentTotals                  PaymentTotals                  `json:",omitempty"`
+	PaymentDisplayTotals           PaymentDisplay                 `json:",omitempty"`
+	PaymentDisplaySubTotals        PaymentDisplay                 `json:",omitempty"`
+	ExchangeRates                  ExchangeRates                  `json:",omitempty"`
+	SupportedTransactionCurrencies SupportedTransactionCurrencies `json:",omitempty"`
+	MinerFees                      MinerFees                      `json:",omitempty"`
 }
 
 type Buyer struct {
@@ -64,6 +84,64 @@ type Buyer struct {
 	Email      string `json:",omitempty"`
 	Phone      string `json:",omitempty"`
 	Notify     bool   `json:",omitempty"`
+}
+
+type PaymentTotals struct {
+	Btc             float64 `json:",omitempty"`
+	Bch             float64 `json:",omitempty"`
+	Eth             float64 `json:",omitempty"`
+	Gusd            float64 `json:",omitempty"`
+	Pax             float64 `json:",omitempty"`
+	Busd            float64 `json:",omitempty"`
+	Usdc            float64 `json:",omitempty"`
+	Xrp             float64 `json:",omitempty"`
+	Enabled         bool    `json:",omitempty"`
+	SatoshisPerByte float64 `json:",omitempty"`
+	TotalFee        float64 `json:",omitempty"`
+}
+
+type PaymentDisplay struct {
+	Btc  string `json:",omitempty"`
+	Bch  string `json:",omitempty"`
+	Eth  string `json:",omitempty"`
+	Gusd string `json:",omitempty"`
+	Pax  string `json:",omitempty"`
+	Busd string `json:",omitempty"`
+	Usdc string `json:",omitempty"`
+	Xrp  string `json:",omitempty"`
+}
+
+type ExchangeRates struct {
+	Btc  PaymentTotals
+	Bch  PaymentTotals
+	Eth  PaymentTotals
+	Gusd PaymentTotals
+	Pax  PaymentTotals
+	Busd PaymentTotals
+	Usdc PaymentTotals
+	Xrp  PaymentTotals
+}
+
+type SupportedTransactionCurrencies struct {
+	Btc  PaymentTotals
+	Bch  PaymentTotals
+	Eth  PaymentTotals
+	Gusd PaymentTotals
+	Pax  PaymentTotals
+	Busd PaymentTotals
+	Usdc PaymentTotals
+	Xrp  PaymentTotals
+}
+
+type MinerFees struct {
+	Btc  PaymentTotals
+	Bch  PaymentTotals
+	Eth  PaymentTotals
+	Gusd PaymentTotals
+	Pax  PaymentTotals
+	Busd PaymentTotals
+	Usdc PaymentTotals
+	Xrp  PaymentTotals
 }
 
 // Go struct mapping the JSON returned from the BitPay server when sending a POST or GET request to /invoices.
@@ -140,7 +218,7 @@ type Address struct {
 }
 
 // CreateInvoice returns an invoice type or pass the error from the server. The method will create an invoice on the BitPay server.
-func (client *Client) CreateInvoice(i Invoice) (inv invoice, err error) {
+func (client *Client) CreateInvoice(i Invoice) (inv Invoice, err error) {
 	match, _ := regexp.MatchString("^[[:upper:]]{3}$", i.Currency)
 	if !match {
 		err = errors.New("BitPayArgumentError: invalid currency code")
@@ -150,7 +228,7 @@ func (client *Client) CreateInvoice(i Invoice) (inv invoice, err error) {
 	i.Token = client.Token.Token
 	response, _ := client.Post("invoices", i)
 	body, err := ioutil.ReadAll(response.Body)
-	var invoice invoice
+	var invoice Invoice
 	json.Unmarshal(body, &invoice)
 	return invoice, err
 }
