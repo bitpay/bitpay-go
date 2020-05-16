@@ -34,119 +34,115 @@ type Token struct {
 }
 
 type Invoice struct {
-	Token                 string   `json:"token,omitempty"`
-	Price                 float64  `json:"price,omitempty"`
-	Currency              string   `json:"currency,omitempty"`
-	OrderId               string   `json:"order,omitempty"`
-	ItemDesc              string   `json:"itemDesc,omitempty"`
-	ItemCode              string   `json:"itemCode,omitempty"`
-	NotificationEmail     string   `json:"notificationEmail,omitempty"`
-	NotificationUrl       string   `json:"notificationUrl,omitempty"`
-	RedirectUrl           string   `json:"redirectUrl,omitempty"`
-	PosData               string   `json:"posData,omitempty"`
-	TransactionSpeed      string   `json:"transactionSpeed,omitempty"`
-	FullNotifications     string   `json:"fullNotifications,omitempty"`
-	ExtendedNotifications string   `json:"extendedNotifications,omitempty"`
-	Physical              string   `json:"physical,omitempty"`
-	Buyer                 *Buyer   `json:"buyer,omitempty"`
-	PaymentCurrencies     []string `json:"paymentCurrencies,omitempty"`
-	JsonPayProRequired    string   `json:",omitempty"`
-	//Additional Response Fiend
-	Url                            string                          `json:"url,omitempty"`
-	Status                         string                          `json:"status,omitempty"`
-	InvoiceTime                    *time.Time                      `json:",omitempty"`
-	ExpirationTime                 *time.Time                      `json:",omitempty"`
-	CurrentTime                    *time.Time                      `json:",omitempty"`
-	LowFeeDetected                 bool                            `json:",omitempty"`
-	AmountPaid                     float64                         `json:",omitempty"`
-	DisplayAmountPaid              float64                         `json:",omitempty"`
-	ExceptionStatus                bool                            `json:",omitempty"`
-	RefundAddressRequestPending    bool                            `json:",omitempty"`
-	BuyerProvidedInfo              *Buyer                          `json:",omitempty"`
-	PaymentSubtotals               *PaymentTotals                  `json:",omitempty"`
-	PaymentTotals                  *PaymentTotals                  `json:",omitempty"`
-	PaymentDisplayTotals           *PaymentDisplay                 `json:",omitempty"`
-	PaymentDisplaySubTotals        *PaymentDisplay                 `json:",omitempty"`
-	ExchangeRates                  *ExchangeRates                  `json:",omitempty"`
-	SupportedTransactionCurrencies *SupportedTransactionCurrencies `json:",omitempty"`
-	MinerFees                      *MinerFees                      `json:",omitempty"`
-	Addresses                      *PaymentDisplay                 `json:",omitempty"`
-	BitcoinAddress                 string                          `json:",omitempty"`
-	BtcDue                         string                          `json:"btcDue,omitempty"`
-	BtcPaid                        string                          `json:"btcPaid,omitempty"`
-	BtcPrice                       string                          `json:"btcPrice,omitempty"`
-	Id                             string                          `json:"id,omitempty"`
-}
-
-type Buyer struct {
-	Name       string `json:",omitempty"`
-	Address1   string `json:",omitempty"`
-	Address2   string `json:",omitempty"`
-	Locality   string `json:",omitempty"`
-	Region     string `json:",omitempty"`
-	PostalCode string `json:",omitempty"`
-	Country    string `json:",omitempty"`
-	Email      string `json:",omitempty"`
-	Phone      string `json:",omitempty"`
-	Notify     bool   `json:",omitempty"`
-}
-
-type PaymentTotals struct {
-	Btc             float64 `json:",omitempty"`
-	Bch             float64 `json:",omitempty"`
-	Eth             float64 `json:",omitempty"`
-	Gusd            float64 `json:",omitempty"`
-	Pax             float64 `json:",omitempty"`
-	Busd            float64 `json:",omitempty"`
-	Usdc            float64 `json:",omitempty"`
-	Xrp             float64 `json:",omitempty"`
-	Enabled         bool    `json:",omitempty"`
-	SatoshisPerByte float64 `json:",omitempty"`
-	TotalFee        float64 `json:",omitempty"`
-}
-
-type PaymentDisplay struct {
-	Btc  string `json:",omitempty"`
-	Bch  string `json:",omitempty"`
-	Eth  string `json:",omitempty"`
-	Gusd string `json:",omitempty"`
-	Pax  string `json:",omitempty"`
-	Busd string `json:",omitempty"`
-	Usdc string `json:",omitempty"`
-	Xrp  string `json:",omitempty"`
-}
-
-type ExchangeRates struct {
-	Btc  *PaymentTotals
-	Bch  *PaymentTotals
-	Eth  *PaymentTotals
-	Gusd *PaymentTotals
-	Pax  *PaymentTotals
-	Busd *PaymentTotals
-	Usdc *PaymentTotals
-	Xrp  *PaymentTotals
-}
-
-type SupportedTransactionCurrencies struct {
-	Btc  *PaymentTotals
-	Bch  *PaymentTotals
-	Eth  *PaymentTotals
-	Gusd *PaymentTotals
-	Pax  *PaymentTotals
-	Busd *PaymentTotals
-	Usdc *PaymentTotals
-	Xrp  *PaymentTotals
-}
-
-type MinerFees struct {
-	Btc  *PaymentTotals
-	Bch  *PaymentTotals
-	Eth  *PaymentTotals
-	Gusd *PaymentTotals
-	Pax  *PaymentTotals
-	Busd *PaymentTotals
-	Usdc *PaymentTotals
-	Xrp  *PaymentTotals
+	Addresses struct {
+		BTC string `json:"BTC"`
+	} `json:"addresses"`
+	AmountPaid     int    `json:"amountPaid"`
+	BitcoinAddress string `json:"bitcoinAddress"`
+	BtcDue         string `json:"btcDue"`
+	BtcPaid        string `json:"btcPaid"`
+	BtcPrice       string `json:"btcPrice"`
+	Buyer          struct {
+		Address1   interface{} `json:"address1"`
+		Address2   interface{} `json:"address2"`
+		Country    interface{} `json:"country"`
+		Email      interface{} `json:"email"`
+		Locality   interface{} `json:"locality"`
+		Name       interface{} `json:"name"`
+		Phone      interface{} `json:"phone"`
+		PostalCode interface{} `json:"postalCode"`
+		Region     interface{} `json:"region"`
+	} `json:"buyer"`
+	BuyerPaidBtcMinerFee interface{} `json:"buyerPaidBtcMinerFee"`
+	BuyerTotalBtcAmount  interface{} `json:"buyerTotalBtcAmount"`
+	CryptoInfo           []struct {
+		Address    string `json:"address"`
+		CryptoCode string `json:"cryptoCode"`
+		CryptoPaid string `json:"cryptoPaid"`
+		Due        string `json:"due"`
+		ExRates    struct {
+			USD int `json:"USD"`
+		} `json:"exRates"`
+		NetworkFee  string `json:"networkFee"`
+		Paid        string `json:"paid"`
+		PaymentType string `json:"paymentType"`
+		PaymentUrls struct {
+			BIP21  string      `json:"BIP21"`
+			BIP72  interface{} `json:"BIP72"`
+			BIP72B interface{} `json:"BIP72b"`
+			BIP73  interface{} `json:"BIP73"`
+			BOLT11 interface{} `json:"BOLT11"`
+		} `json:"paymentUrls"`
+		Payments []interface{} `json:"payments"`
+		Price    string        `json:"price"`
+		Rate     float64       `json:"rate"`
+		TotalDue string        `json:"totalDue"`
+		TxCount  int           `json:"txCount"`
+		URL      string        `json:"url"`
+	} `json:"cryptoInfo"`
+	Currency    string `json:"currency"`
+	CurrentTime int64  `json:"currentTime"`
+	ExRates     struct {
+		USD int `json:"USD"`
+	} `json:"exRates"`
+	ExceptionStatus bool `json:"exceptionStatus"`
+	ExchangeRates   struct {
+		BTC struct {
+			USD int `json:"USD"`
+		} `json:"BTC"`
+	} `json:"exchangeRates"`
+	ExpirationTime int64 `json:"expirationTime"`
+	Flags          struct {
+		Refundable bool `json:"refundable"`
+	} `json:"flags"`
+	GUID           string      `json:"guid"`
+	ID             string      `json:"id"`
+	InvoiceTime    int64       `json:"invoiceTime"`
+	ItemCode       interface{} `json:"itemCode"`
+	ItemDesc       interface{} `json:"itemDesc"`
+	LowFeeDetected bool        `json:"lowFeeDetected"`
+	MinerFees      struct {
+		BTC struct {
+			SatoshisPerByte int `json:"satoshisPerByte"`
+			TotalFee        int `json:"totalFee"`
+		} `json:"BTC"`
+	} `json:"minerFees"`
+	OrderID      interface{} `json:"orderId"`
+	PaymentCodes struct {
+		BTC struct {
+			BIP21  string      `json:"BIP21"`
+			BIP72  interface{} `json:"BIP72"`
+			BIP72B interface{} `json:"BIP72b"`
+			BIP73  interface{} `json:"BIP73"`
+			BOLT11 interface{} `json:"BOLT11"`
+		} `json:"BTC"`
+	} `json:"paymentCodes"`
+	PaymentSubtotals struct {
+		BTC int `json:"BTC"`
+	} `json:"paymentSubtotals"`
+	PaymentTotals struct {
+		BTC int `json:"BTC"`
+	} `json:"paymentTotals"`
+	PaymentUrls struct {
+		BIP21  string      `json:"BIP21"`
+		BIP72  interface{} `json:"BIP72"`
+		BIP72B interface{} `json:"BIP72b"`
+		BIP73  interface{} `json:"BIP73"`
+		BOLT11 interface{} `json:"BOLT11"`
+	} `json:"paymentUrls"`
+	PosData                        interface{} `json:"posData"`
+	Price                          int         `json:"price"`
+	Rate                           float64     `json:"rate"`
+	RefundAddressRequestPending    bool        `json:"refundAddressRequestPending"`
+	Status                         string      `json:"status"`
+	SupportedTransactionCurrencies struct {
+		BTC struct {
+			Enabled bool        `json:"enabled"`
+			Reason  interface{} `json:"reason"`
+		} `json:"BTC"`
+	} `json:"supportedTransactionCurrencies"`
+	Token string `json:"token"`
+	URL   string `json:"url"`
 }
 
 // Go struct mapping the JSON returned from the BitPay server when sending a POST or GET request to /invoices.
