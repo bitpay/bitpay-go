@@ -34,30 +34,29 @@ type Token struct {
 }
 
 type Invoice struct {
-	Token                 string   `json:",omitempty"`
-	Price                 float64  `json:",omitempty"`
-	Currency              string   `json:",omitempty"`
-	OrderId               string   `json:",omitempty"`
-	ItemDesc              string   `json:",omitempty"`
-	ItemCode              string   `json:",omitempty"`
-	NotificationEmail     string   `json:",omitempty"`
-	NotificationUrl       string   `json:",omitempty"`
-	RedirectUrl           string   `json:",omitempty"`
-	PosData               string   `json:",omitempty"`
-	TransactionSpeed      string   `json:",omitempty"`
-	FullNotifications     string   `json:",omitempty"`
-	ExtendedNotifications string   `json:",omitempty"`
-	Physical              string   `json:",omitempty"`
-	Buyer                 *Buyer   `json:",omitempty"`
-	PaymentCurrencies     []string `json:",omitempty"`
+	Token                 string   `json:"token,omitempty"`
+	Price                 float64  `json:"price,omitempty"`
+	Currency              string   `json:"currency,omitempty"`
+	OrderId               string   `json:"order,omitempty"`
+	ItemDesc              string   `json:"itemDesc,omitempty"`
+	ItemCode              string   `json:"itemCode,omitempty"`
+	NotificationEmail     string   `json:"notificationEmail,omitempty"`
+	NotificationUrl       string   `json:"notificationUrl,omitempty"`
+	RedirectUrl           string   `json:"redirectUrl,omitempty"`
+	PosData               string   `json:"posData,omitempty"`
+	TransactionSpeed      string   `json:"transactionSpeed,omitempty"`
+	FullNotifications     string   `json:"fullNotifications,omitempty"`
+	ExtendedNotifications string   `json:"extendedNotifications,omitempty"`
+	Physical              string   `json:"physical,omitempty"`
+	Buyer                 *Buyer   `json:"buyer,omitempty"`
+	PaymentCurrencies     []string `json:"paymentCurrencies,omitempty"`
 	JsonPayProRequired    string   `json:",omitempty"`
 	//Additional Response Fiend
-	Url                            string                          `json:",omitempty"`
-	Status                         string                          `json:",omitempty"`
+	Url                            string                          `json:"url,omitempty"`
+	Status                         string                          `json:"status,omitempty"`
 	InvoiceTime                    *time.Time                      `json:",omitempty"`
 	ExpirationTime                 *time.Time                      `json:",omitempty"`
 	CurrentTime                    *time.Time                      `json:",omitempty"`
-	Id                             string                          `json:",omitempty"`
 	LowFeeDetected                 bool                            `json:",omitempty"`
 	AmountPaid                     float64                         `json:",omitempty"`
 	DisplayAmountPaid              float64                         `json:",omitempty"`
@@ -73,9 +72,10 @@ type Invoice struct {
 	MinerFees                      *MinerFees                      `json:",omitempty"`
 	Addresses                      *PaymentDisplay                 `json:",omitempty"`
 	BitcoinAddress                 string                          `json:",omitempty"`
-	BtcDue                         string                          `json:",omitempty"`
-	BtcPaid                        string                          `json:",omitempty"`
-	BtcPrice                       string                          `json:",omitempty"`
+	BtcDue                         string                          `json:"btcDue,omitempty"`
+	BtcPaid                        string                          `json:"btcPaid,omitempty"`
+	BtcPrice                       string                          `json:"btcPrice,omitempty"`
+	Id                             string                          `json:"id,omitempty"`
 }
 
 type Buyer struct {
