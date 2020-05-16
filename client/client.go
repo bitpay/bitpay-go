@@ -33,6 +33,39 @@ type Token struct {
 	PairingCode       string
 }
 
+type Invoice struct {
+	Token                 string
+	Price                 float64
+	Currency              string
+	OrderId               string
+	ItemDesc              string
+	ItemCode              string
+	NotificationEmail     string
+	NotificationUrl       string
+	RedirectUrl           string
+	PosData               string
+	TransactionSpeed      string
+	FullNotifications     string
+	ExtendedNotifications string
+	Physical              string
+	Buyer                 Buyer
+	PaymentCurrencies     []string
+	JsonPayProRequired    string
+}
+
+type Buyer struct {
+	Name       string
+	Address1   string
+	Address2   string
+	Locality   string
+	Region     string
+	PostalCode string
+	Country    string
+	Email      string
+	Phone      string
+	Notify     bool
+}
+
 // Go struct mapping the JSON returned from the BitPay server when sending a POST or GET request to /invoices.
 
 type invoice struct {
@@ -107,27 +140,19 @@ type Address struct {
 }
 
 // CreateInvoice returns an invoice type or pass the error from the server. The method will create an invoice on the BitPay server.
-func (client *Client) CreateInvoice(price float64, currency string) (inv invoice, err error) {
-	match, _ := regexp.MatchString("^[[:upper:]]{3}$", currency)
+func (client *Client) CreateInvoice(i Invoice) (inv invoice, err error) {
+	match, _ := regexp.MatchString("^[[:upper:]]{3}$", i.Currency)
 	if !match {
 		err = errors.New("BitPayArgumentError: invalid currency code")
 		return inv, err
 	}
-	paylo := make(map[string]string)
-	var floatPrec int
-	if currency == "BTC" {
-		floatPrec = 8
-	} else {
-		floatPrec = 2
-	}
-	priceString := strconv.FormatFloat(price, 'f', floatPrec, 64)
-	paylo["price"] = priceString
-	paylo["currency"] = currency
-	paylo["token"] = client.Token.Token
-	paylo["id"] = client.ClientId
-	response, _ := client.Post("invoices", paylo)
-	inv, err = processInvoice(response)
-	return inv, err
+
+	i.Token = client.Token.Token
+	response, _ := client.Post("invoices", i)
+	body, err := ioutil.ReadAll(response.Body)
+	var invoice invoice
+	json.Unmarshal(body, &invoice)
+	return invoice, err
 }
 
 // PairWithFacade
