@@ -71,6 +71,11 @@ type Invoice struct {
 	ExchangeRates                  *ExchangeRates                  `json:",omitempty"`
 	SupportedTransactionCurrencies *SupportedTransactionCurrencies `json:",omitempty"`
 	MinerFees                      *MinerFees                      `json:",omitempty"`
+	Addresses                      *PaymentDisplay                 `json:",omitempty"`
+	BitcoinAddress                 string                          `json:",omitempty"`
+	BtcDue                         string                          `json:",omitempty"`
+	BtcPaid                        string                          `json:",omitempty"`
+	BtcPrice                       string                          `json:",omitempty"`
 }
 
 type Buyer struct {
