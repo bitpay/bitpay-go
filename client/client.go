@@ -346,7 +346,10 @@ func (client *Client) GetTokens() (tokes []map[string]string, err error) {
 	req.Header.Add("X-Identity", publ)
 	sig := ku.Sign(url, client.Pem)
 	req.Header.Add("X-Signature", sig)
-	response, _ := htclient.Do(req)
+	response, err := htclient.Do(req)
+	if err != nil {
+		return tokes, err
+	}
 	defer response.Body.Close()
 	contents, err := ioutil.ReadAll(response.Body)
 	if err != nil {
