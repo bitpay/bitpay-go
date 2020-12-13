@@ -348,7 +348,10 @@ func (client *Client) GetTokens() (tokes []map[string]string, err error) {
 	req.Header.Add("X-Signature", sig)
 	response, _ := htclient.Do(req)
 	defer response.Body.Close()
-	contents, _ := ioutil.ReadAll(response.Body)
+	contents, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return tokes, err
+	}
 	var jsonContents map[string]interface{}
 	json.Unmarshal(contents, &jsonContents)
 	if response.StatusCode/100 != 2 {
