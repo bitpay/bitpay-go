@@ -388,7 +388,12 @@ func setHttpClient(client *Client) *http.Client {
 
 func processErrorMessage(response *http.Response, jsonContents map[string]interface{}) error {
 	responseStatus := strconv.Itoa(response.StatusCode)
-	contentError := responseStatus + ": " + jsonContents["error"].(string)
+	var contentError string
+	if jsonContents != nil {
+		contentError = responseStatus + ": " + jsonContents["error"].(string)
+	} else {
+		contentError = responseStatus
+	}
 	return errors.New(contentError)
 }
 
