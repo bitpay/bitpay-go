@@ -330,7 +330,10 @@ func (client *Client) GetInvoice(invId string) (inv Invoice, err error) {
 	req.Header.Add("X-Identity", publ)
 	sig := ku.Sign(url, client.Pem)
 	req.Header.Add("X-Signature", sig)
-	response, _ := htclient.Do(req)
+	response, err := htclient.Do(req)
+	if err != nil {
+		return inv, err
+	}
 	inv, err = processInvoice(response)
 	return inv, err
 }
