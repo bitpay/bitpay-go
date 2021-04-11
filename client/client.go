@@ -200,7 +200,7 @@ func handleResponse(resp *http.Response, i interface{}) error {
 	if resp.StatusCode/100 != 2 {
 		return fmt.Errorf("%v", string(contents))
 	}
-	fmt.Println(string(contents))
+
 	w := responseWrapper{}
 	if err := json.Unmarshal(contents, &w); err != nil {
 		return err
