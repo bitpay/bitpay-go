@@ -3,176 +3,97 @@ package client
 
 import (
 	"bytes"
-	"crypto/tls"
 	"encoding/json"
 	"errors"
-	ku "github.com/bitpay/bitpay-go/key_utils"
+	"fmt"
 	"io/ioutil"
 	"net/http"
-	"regexp"
-	"strconv"
+	"reflect"
+
+	"github.com/vinovest/bitpay-go/pkg/config"
+	ku "github.com/vinovest/bitpay-go/pkg/key_utils"
 )
+
+type TokenCreation struct {
+	Data []struct {
+		Policies []struct {
+			Policy string   `json:"policy"`
+			Method string   `json:"method"`
+			Params []string `json:"params"`
+		} `json:"policies"`
+		Token             string `json:"token"`
+		Facade            string `json:"facade"`
+		DateCreated       int64  `json:"dateCreated"`
+		PairingExpiration int64  `json:"pairingExpiration"`
+		PairingCode       string `json:"pairingCode"`
+	} `json:"data"`
+}
 
 // The Client struct maintains the state of the current client. To use a client from session to session, the Pem and Token will need to be saved and used in the next client. The ClientId can be recreated by using the key_util.GenerateSinFromPem func, and the ApiUri will generally be https://bitpay.com. Insecure should generally be set to false or not set at all, there are a limited number of test scenarios in which it must be set to true.
 type Client struct {
-	Pem      string
-	ApiUri   string
-	Insecure bool
-	ClientId string
-	Token    Token
+	config config.BitpayData
+	facade config.Facade
 }
 
-// The Token struct is a go mapping of a subset of the JSON returned from the server with a request to authenticate (pair).
-type Token struct {
-	Token             string
-	Facade            string
-	DateCreated       float64
-	PairingExpiration float64
-	Resource          string
-	PairingCode       string
-}
-
-// Go struct mapping the JSON returned from the BitPay server when sending a POST or GET request to /invoices.
-
-type invoice struct {
-	Url             string
-	Status          string
-	BtcPrice        string
-	BtcDue          string
-	Price           float64
-	Currency        string
-	ExRates         map[string]float64
-	InvoiceTime     int64
-	ExpirationTime  int64
-	CurrentTime     int64
-	Guid            string
-	Id              string
-	BtcPaid         string
-	Rate            float64
-	ExceptionStatus bool
-	PaymentUrls     map[string]string
-	Token           string
+func New(c config.BitpayData, f config.Facade) *Client {
+	return &Client{
+		config: c,
+		facade: f,
+	}
 }
 
 // CreateInvoice returns an invoice type or pass the error from the server. The method will create an invoice on the BitPay server.
-func (client *Client) CreateInvoice(price float64, currency string) (inv invoice, err error) {
-	match, _ := regexp.MatchString("^[[:upper:]]{3}$", currency)
-	if !match {
-		err = errors.New("BitPayArgumentError: invalid currency code")
-		return inv, err
-	}
-	paylo := make(map[string]string)
-	var floatPrec int
-	if currency == "BTC" {
-		floatPrec = 8
-	} else {
-		floatPrec = 2
-	}
-	priceString := strconv.FormatFloat(price, 'f', floatPrec, 64)
-	paylo["price"] = priceString
-	paylo["currency"] = currency
-	paylo["token"] = client.Token.Token
-	paylo["id"] = client.ClientId
-	response, _ := client.Post("invoices", paylo)
-	inv, err = processInvoice(response)
-	return inv, err
+func (c *Client) CreateInvoice(payload InvoiceCreation) (Invoice, error) {
+	response, _ := c.post("invoices", payload)
+	i := Invoice{}
+	err := handleResponse(response, &i)
+	return i, err
 }
 
-// PairWithFacade
-func (client *Client) PairWithFacade(str string) (tok Token, err error) {
-	paylo := make(map[string]string)
-	paylo["facade"] = str
-	tok, err = client.PairClient(paylo)
-	return tok, err
-}
+func (c *Client) GetTokens() ([]map[string]string, error) {
+	url := c.config.GetEnvURL() + "/tokens"
 
-// PairWithCode retrieves a token from the server and authenticates the keys of the calling client. The string passed to the client is a "pairing code" that must be retrieved from https://bitpay.com/dashboard/merchant/api-tokens. PairWithCode returns a Token type that must be assigned to the Token field of a client in order for that client to create invoices. For example `client.Token = client.PairWithCode("abcdefg")`.
-func (client *Client) PairWithCode(str string) (tok Token, err error) {
-	match, _ := regexp.MatchString("^[[:alnum:]]{7}$", str)
-	if !match {
-		err = errors.New("BitPayArgumentError: invalid pairing code")
-		return tok, err
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
 	}
-	paylo := make(map[string]string)
-	paylo["pairingCode"] = str
-	tok, err = client.PairClient(paylo)
-	return tok, err
-}
-
-func (client *Client) PairClient(paylo map[string]string) (tok Token, err error) {
-	paylo["id"] = client.ClientId
-	sin := ku.GenerateSinFromPem(client.Pem)
-	client.ClientId = sin
-	url := client.ApiUri + "/tokens"
-	htclient := setHttpClient(client)
-	payload, _ := json.Marshal(paylo)
-	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(payload))
 	req.Header.Add("content-type", "application/json")
 	req.Header.Add("accept", "application/json")
 	req.Header.Add("X-accept-version", "2.0.0")
-	response, _ := htclient.Do(req)
-	defer response.Body.Close()
-	contents, _ := ioutil.ReadAll(response.Body)
-	var jsonContents map[string]interface{}
-	json.Unmarshal(contents, &jsonContents)
-	if response.StatusCode/100 != 2 {
-		err = processErrorMessage(response, jsonContents)
-	} else {
-		tok, err = processToken(response, jsonContents)
-		err = nil
+	key, err := c.config.GetPrivateKey(c.facade)
+	if err != nil {
+		return nil, err
 	}
-	return tok, err
-}
+	publ := ku.ExtractCompressedPublicKey(key)
 
-func (client *Client) Post(path string, paylo map[string]string) (response *http.Response, err error) {
-	url := client.ApiUri + "/" + path
-	htclient := setHttpClient(client)
-	payload, _ := json.Marshal(paylo)
-	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(payload))
-	req.Header.Add("content-type", "application/json")
-	req.Header.Add("accept", "application/json")
-	req.Header.Add("X-accept-version", "2.0.0")
-	publ := ku.ExtractCompressedPublicKey(client.Pem)
 	req.Header.Add("X-Identity", publ)
-	sig := ku.Sign(url+string(payload), client.Pem)
+	sig := ku.Sign(url, key)
 	req.Header.Add("X-Signature", sig)
-	response, err = htclient.Do(req)
-	return response, err
-}
-
-// GetInvoice is a public facade method, any client which has the ApiUri field set can retrieve an invoice from that endpoint, provided they have the invoice id.
-func (client *Client) GetInvoice(invId string) (inv invoice, err error) {
-	url := client.ApiUri + "/invoices/" + invId
-	htclient := setHttpClient(client)
-	response, _ := htclient.Get(url)
-	inv, err = processInvoice(response)
-	return inv, err
-}
-
-func (client *Client) GetTokens() (tokes []map[string]string, err error) {
-	url := client.ApiUri + "/tokens"
-	htclient := setHttpClient(client)
-	req, _ := http.NewRequest("GET", url, nil)
-	req.Header.Add("content-type", "application/json")
-	req.Header.Add("accept", "application/json")
-	req.Header.Add("X-accept-version", "2.0.0")
-	publ := ku.ExtractCompressedPublicKey(client.Pem)
-	req.Header.Add("X-Identity", publ)
-	sig := ku.Sign(url, client.Pem)
-	req.Header.Add("X-Signature", sig)
-	response, _ := htclient.Do(req)
-	defer response.Body.Close()
-	contents, _ := ioutil.ReadAll(response.Body)
-	var jsonContents map[string]interface{}
-	json.Unmarshal(contents, &jsonContents)
-	if response.StatusCode/100 != 2 {
-		err = processErrorMessage(response, jsonContents)
-	} else {
-		this, _ := json.Marshal(jsonContents["data"])
-		json.Unmarshal(this, &tokes)
-		err = nil
+	response, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
 	}
-	return tokes, nil
+	defer response.Body.Close()
+	contents, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if response.StatusCode/100 != 2 {
+		return nil, fmt.Errorf("Did not get ")
+	}
+
+	var jsonContents map[string]interface{}
+	if err := json.Unmarshal(contents, &jsonContents); err != nil {
+		return nil, err
+	}
+
+	this, err := json.Marshal(jsonContents["data"])
+	if err != nil {
+		return nil, err
+	}
+	var t []map[string]string
+	return t, json.Unmarshal(this, &t)
 }
 
 func (client *Client) GetToken(facade string) (token string, err error) {
@@ -186,44 +107,104 @@ func (client *Client) GetToken(facade string) (token string, err error) {
 	return "error", errors.New("facade not available in tokens")
 }
 
-func setHttpClient(client *Client) *http.Client {
-	if client.Insecure {
-		trans := &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		}
-		htclient := &http.Client{Transport: trans}
-		return htclient
-	} else {
-		trans := &http.Transport{}
-		htclient := &http.Client{Transport: trans}
-		return htclient
+func PairClient(key string, env config.Environment, f config.Facade) (TokenCreation, error) {
+	sin := ku.GenerateSinFromPem(key)
+	url := config.UrlMapping[env] + "/tokens"
+
+	data := map[string]string{
+		"id":     sin,
+		"facade": string(f),
 	}
-}
 
-func processErrorMessage(response *http.Response, jsonContents map[string]interface{}) error {
-	responseStatus := strconv.Itoa(response.StatusCode)
-	contentError := responseStatus + ": " + jsonContents["error"].(string)
-	return errors.New(contentError)
-}
-
-func processToken(response *http.Response, jsonContents map[string]interface{}) (tok Token, err error) {
-	datarray := jsonContents["data"].([]interface{})
-	data, _ := json.Marshal(datarray[0])
-	json.Unmarshal(data, &tok)
-	return tok, nil
-}
-
-func processInvoice(response *http.Response) (inv invoice, err error) {
+	payload, err := json.Marshal(data)
+	if err != nil {
+		return TokenCreation{}, err
+	}
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(payload))
+	if err != nil {
+		return TokenCreation{}, err
+	}
+	req.Header.Add("content-type", "application/json")
+	req.Header.Add("accept", "application/json")
+	req.Header.Add("X-accept-version", "2.0.0")
+	response, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return TokenCreation{}, err
+	}
 	defer response.Body.Close()
-	contents, _ := ioutil.ReadAll(response.Body)
-	var jsonContents map[string]interface{}
-	json.Unmarshal(contents, &jsonContents)
-	if response.StatusCode/100 != 2 {
-		err = processErrorMessage(response, jsonContents)
-	} else {
-		this, _ := json.Marshal(jsonContents["data"])
-		json.Unmarshal(this, &inv)
-		err = nil
+
+	contents, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return TokenCreation{}, nil
 	}
-	return inv, err
+	if response.StatusCode/100 != 2 {
+		return TokenCreation{}, fmt.Errorf("Did not get status code 200. %v", string(contents))
+	}
+
+	t := TokenCreation{}
+	err = json.Unmarshal(contents, &t)
+	return t, err
+}
+
+func (c *Client) post(path string, body interface{}) (*http.Response, error) {
+	url := config.UrlMapping[c.config.BitPayConfiguration.Environment] + "/" + path
+	payload, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("content-type", "application/json")
+	req.Header.Add("accept", "application/json")
+	req.Header.Add("X-accept-version", "2.0.0")
+
+	key, err := c.config.GetPrivateKey(c.facade)
+	if err != nil {
+		return nil, err
+	}
+
+	publ := ku.ExtractCompressedPublicKey(key)
+	req.Header.Add("X-Identity", publ)
+
+	sig := ku.Sign(url+string(payload), key)
+	req.Header.Add("X-Signature", sig)
+
+	return http.DefaultClient.Do(req)
+}
+
+// GetInvoice is a public facade method, any client which has the ApiUri field set can retrieve an invoice from that endpoint, provided they have the invoice id.
+func (c *Client) GetInvoice(invId string) (Invoice, error) {
+	url := c.config.GetEnvURL() + "/invoices/" + invId
+
+	response, err := http.Get(url)
+	if err != nil {
+		return Invoice{}, nil
+	}
+	i := Invoice{}
+	return i, handleResponse(response, &i)
+}
+
+func handleResponse(resp *http.Response, i interface{}) error {
+	defer resp.Body.Close()
+	contents, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	if reflect.TypeOf(i).Kind() != reflect.Ptr {
+		return errors.New("value is not of pointer type")
+	}
+
+	if resp.StatusCode/100 != 2 {
+		return fmt.Errorf("%v", string(contents))
+	}
+
+	w := responseWrapper{}
+	if err := json.Unmarshal(contents, &w); err != nil {
+		return err
+	}
+
+	return json.Unmarshal(w.Data, i)
 }
